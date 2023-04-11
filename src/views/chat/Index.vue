@@ -23,9 +23,3 @@
   import ChatNavigation from '@/components/chat/ChatNavigation.vue'
   import ChatRoom from '@/components/chat/ChatRoom.vue'
 </script>
-
-<style lang="scss">
-  .height-100 {
-    height: 100%;
-  }
-</style>

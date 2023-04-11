@@ -20,8 +20,4 @@
     top: 0;
     z-index: 0;
   }
-  .mg-tittle {
-    margin-top: 20px;
-    margin-bottom: 50px;
-  }
 </style>

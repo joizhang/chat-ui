@@ -78,3 +78,10 @@
 
   function handleReset() {}
 </script>
+
+<style lang="scss">
+  .mg-tittle {
+    margin-top: 20px;
+    margin-bottom: 50px;
+  }
+</style>
