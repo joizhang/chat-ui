@@ -8,7 +8,7 @@
               <v-col cols="4" class="h-100">
                 <chat-navigation></chat-navigation>
               </v-col>
-              <v-col cols="8" class="h-100">
+              <v-col cols="8" class="h-100 overflow-hidden">
                 <chat-room></chat-room>
               </v-col>
             </v-row>
@@ -20,6 +20,6 @@
 </template>
 
 <script lang="ts" setup>
-  import ChatNavigation from '@/components/chat/ChatNavigation.vue'
-  import ChatRoom from '@/components/chat/ChatRoom.vue'
+  import ChatNavigation from '@/components/ChatNavigation/index.vue'
+  import ChatRoom from '@/components/ChatRoom/index.vue'
 </script>
