@@ -23,6 +23,20 @@ const routes = [
         path: 'hello',
         name: 'Hello',
         component: () => import('@/views/HelloWorld.vue')
+      },
+      {
+        path: '/404',
+        name: '404',
+        component: () => import('@/views/exception/404/index.vue'),
+      },
+      {
+        path: '/500',
+        name: '500',
+        component: () => import('@/views/exception/500/index.vue'),
+      },
+      {
+        path: "/:pathMatch(.*)",
+        redirect: "/404"
       }
     ],
   },
