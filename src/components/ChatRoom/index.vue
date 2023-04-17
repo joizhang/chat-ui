@@ -10,7 +10,29 @@
             <v-btn icon="mdi-magnify" color="#54656f"></v-btn>
           </v-col>
           <v-col cols="1" class="text-center" color="#54656f">
-            <v-btn icon="mdi-dots-vertical"></v-btn>
+            <v-btn icon="mdi-dots-vertical" id="chat-room-menu-activator"></v-btn>
+            <v-menu activator="#chat-room-menu-activator">
+              <v-list width="200">
+                <v-list-item link>
+                  <v-list-item-title>Contact info</v-list-item-title>
+                </v-list-item>
+                <v-list-item link>
+                  <v-list-item-title>Select messages</v-list-item-title>
+                </v-list-item>
+                <v-list-item link>
+                  <v-list-item-title>Close chat</v-list-item-title>
+                </v-list-item>
+                <v-list-item link>
+                  <v-list-item-title>Disappearing message</v-list-item-title>
+                </v-list-item>
+                <v-list-item link>
+                  <v-list-item-title>Clear message</v-list-item-title>
+                </v-list-item>
+                <v-list-item link>
+                  <v-list-item-title>Delete chat</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
           </v-col>
         </v-row>
       </v-container>

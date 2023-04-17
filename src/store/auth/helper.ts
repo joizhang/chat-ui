@@ -1,13 +1,13 @@
 import { ss } from '@/utils/storage'
 
-const LOCAL_NAME = 'SECRET_TOKEN'
+const LOCAL_NAME = 'ACCESS_TOKEN'
 
 export function getToken() {
-  return ss.get(LOCAL_NAME)
+  return ss.get(LOCAL_NAME, false)
 }
 
 export function setToken(token: string) {
-  return ss.set(LOCAL_NAME, token)
+  return ss.set(LOCAL_NAME, token, null, false)
 }
 
 export function removeToken() {

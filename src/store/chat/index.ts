@@ -111,8 +111,8 @@ export const useChatStore = defineStore('chat-store', {
           }
           this.recordState()
         } else {
-          this.chat.push({uuid: uuid, data: [chat]})
-          this.history.push({title: chat.text, isEdit:false, uuid: uuid})
+          this.chat.push({ uuid: uuid, data: [chat] })
+          this.history.push({ title: chat.text, isEdit: false, uuid: uuid })
         }
       }
     },

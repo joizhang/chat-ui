@@ -5,28 +5,28 @@ interface StorageData<T = any> {
   expire: number | null
 }
 
-export function createLocalStorage(options?: { expire?: number | null; crypto?: boolean }) {
-  const DEFAULT_CACHE_TIME = 60 * 60 * 24 * 7
+export function createLocalStorage() {
+  // const DEFAULT_CACHE_TIME = 60 * 60 * 24 * 7
 
-  const { expire, crypto } = Object.assign(
-    {
-      expire: DEFAULT_CACHE_TIME,
-      crypto: true,
-    },
-    options,
-  )
+  // const { expire, crypto } = Object.assign(
+  //   {
+  //     expire: DEFAULT_CACHE_TIME,
+  //     crypto: true,
+  //   },
+  //   options,
+  // )
 
-  function set<T = any>(key: string, data: T) {
+  function set<T = any>(key: string, data: T, expire: number | null, crypto: boolean = true) {
     const storageData: StorageData<T> = {
       data,
-      expire: expire !== null ? new Date().getTime() + expire * 1000 : null,
+      expire: expire !== null ? new Date().getTime() + expire : null,
     }
 
     const json = crypto ? enCrypto(storageData) : JSON.stringify(storageData)
     window.localStorage.setItem(key, json)
   }
 
-  function get(key: string) {
+  function get(key: string, crypto: boolean = true) {
     const json = window.localStorage.getItem(key)
     if (json) {
       let storageData: StorageData | null = null
@@ -50,21 +50,23 @@ export function createLocalStorage(options?: { expire?: number | null; crypto?: 
   }
 
   function remove(key: string) {
+    // debugger
+    console.log("Remove " + key)
     window.localStorage.removeItem(key)
   }
 
-  function clear() {
-    window.localStorage.clear()
-  }
+  // function clear() {
+  //   window.localStorage.clear()
+  // }
 
   return {
     set,
     get,
     remove,
-    clear,
+    // clear,
   }
 }
 
-export const ls = createLocalStorage()
+// export const ls = createLocalStorage()
 
-export const ss = createLocalStorage({ expire: null, crypto: false })
+export const ss = createLocalStorage()

@@ -8,8 +8,9 @@ const service = axios.create({
 service.interceptors.request.use(
   (config) => {
     const token = useAuthStore().token
-    if (token)
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    }
     return config
   },
   (error) => {
@@ -18,13 +19,14 @@ service.interceptors.request.use(
 )
 
 service.interceptors.response.use(
-  (response: AxiosResponse): AxiosResponse => {
-    if (response.status === 200)
-      return response
-
+  (response: AxiosResponse): any => {
+    if (response.status === 200) {
+      return response.data
+    }
     throw new Error(response.status.toString())
   },
   (error) => {
+    // console.log(error)
     return Promise.reject(error)
   },
 )

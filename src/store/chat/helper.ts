@@ -13,10 +13,10 @@ export function defaultState(): Chat.ChatState {
 }
 
 export function getLocalState(): Chat.ChatState {
-  const localState = ss.get(LOCAL_NAME)
+  const localState = ss.get(LOCAL_NAME, false)
   return { ...defaultState(), ...localState }
 }
 
 export function setLocalState(state: Chat.ChatState) {
-  ss.set(LOCAL_NAME, state)
+  ss.set(LOCAL_NAME, state, null, false)
 }

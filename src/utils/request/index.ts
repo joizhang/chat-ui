@@ -1,16 +1,15 @@
 import type { AxiosProgressEvent, AxiosResponse, GenericAbortSignal } from 'axios'
 import request from './axios'
-import { useAuthStore } from '@/store/auth'
+// import { useAuthStore } from '@/store/auth'
 
 export interface HttpOption {
   url: string
-  data?: any
   method?: string
   headers?: any
+  params?: any
+  data?: any
   onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void
   signal?: GenericAbortSignal
-  beforeRequest?: () => void
-  afterRequest?: () => void
 }
 
 export interface Response<T = any> {
@@ -21,82 +20,99 @@ export interface Response<T = any> {
 
 function http<T = any>({
   url,
-  data,
   method,
   headers,
+  params,
+  data,
   onDownloadProgress,
   signal,
-  beforeRequest,
-  afterRequest,
 }: HttpOption) {
-  const successHandler = (res: AxiosResponse<Response<T>>) => {
-    const authStore = useAuthStore()
-
-    if (res.data.status === 'Success' || typeof res.data === 'string') return res.data
-
-    if (res.data.status === 'Unauthorized') {
-      authStore.removeToken()
-      window.location.reload()
-    }
-
-    return Promise.reject(res.data)
-  }
-
-  const failHandler = (error: Response<Error>) => {
-    afterRequest?.()
-    throw new Error(error?.message || 'Error')
-  }
-
-  beforeRequest?.()
-
   method = method || 'GET'
-
-  const params = Object.assign(typeof data === 'function' ? data() : data ?? {}, {})
-
-  return method === 'GET'
-    ? request.get(url, { params, signal, onDownloadProgress }).then(successHandler, failHandler)
-    : request.post(url, params, { headers, signal, onDownloadProgress }).then(successHandler, failHandler)
+  data = Object.assign(typeof data === 'function' ? data() : data ?? {}, {})
+  if (method === 'POST') {
+    return request.post(url, data, { headers, params, signal, onDownloadProgress })
+  } else if (method == 'DELETE') {
+    return request.delete(url, { headers, params, signal, onDownloadProgress })
+  } else if (method == 'PUT') {
+    return request.put(url, data, { headers, params, signal, onDownloadProgress })
+  } else {
+    return request.get(url, { headers, params, signal, onDownloadProgress })
+  }
 }
 
 export function get<T = any>({
   url,
-  data,
   method = 'GET',
+  headers,
+  params,
   onDownloadProgress,
   signal,
-  beforeRequest,
-  afterRequest,
-}: HttpOption): Promise<Response<T>> {
+}: HttpOption): Promise<AxiosResponse<T, T>> {
   return http<T>({
     url,
     method,
-    data,
+    headers,
+    params,
     onDownloadProgress,
     signal,
-    beforeRequest,
-    afterRequest,
   })
 }
 
 export function post<T = any>({
   url,
-  data,
   method = 'POST',
   headers,
+  params,
+  data,
   onDownloadProgress,
   signal,
-  beforeRequest,
-  afterRequest,
-}: HttpOption): Promise<Response<T>> {
+}: HttpOption): Promise<AxiosResponse<T, T>> {
   return http<T>({
     url,
     method,
-    data,
     headers,
+    params,
+    data,
     onDownloadProgress,
     signal,
-    beforeRequest,
-    afterRequest,
+  })
+}
+
+export function del<T = any>({
+  url,
+  method = 'DELETE',
+  headers,
+  params,
+  onDownloadProgress,
+  signal,
+}: HttpOption): Promise<AxiosResponse<T, T>> {
+  return http<T>({
+    url,
+    method,
+    headers,
+    params,
+    onDownloadProgress,
+    signal,
+  })
+}
+
+export function put<T = any>({
+  url,
+  method = 'PUT',
+  headers,
+  params,
+  data,
+  onDownloadProgress,
+  signal,
+}: HttpOption): Promise<AxiosResponse<T, T>> {
+  return http<T>({
+    url,
+    method,
+    headers,
+    params,
+    data,
+    onDownloadProgress,
+    signal,
   })
 }
 
