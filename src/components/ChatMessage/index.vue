@@ -13,20 +13,20 @@
 </template>
 
 <script lang="ts" setup>
-const props = defineProps({
-  dateTime: String,
-  text: String,
-  inversion: Boolean,
-  error: Boolean,
-  loading: Boolean,
-})
+  const props = defineProps({
+    dateTime: String,
+    text: String,
+    inversion: Boolean,
+    error: Boolean,
+    loading: Boolean,
+  })
 </script>
 
 <style lang="scss">
-.text-max-width {
-  max-width: 65%;
-}
-.datetime-font-size {
-  font-size: 12px;
-}
+  .text-max-width {
+    max-width: 65%;
+  }
+  .datetime-font-size {
+    font-size: 12px;
+  }
 </style>

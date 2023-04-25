@@ -35,18 +35,44 @@
     </v-app-bar>
     <v-navigation-drawer class="w-100">
       <v-text-field
-        :loading="loading"
+        v-model="searchText"
         density="compact"
         variant="outlined"
-        label="Search templates"
-        append-inner-icon="mdi-magnify"
+        label="Search or start a new chat"
         single-line
         hide-details
-        @click:append-inner="onSearchCustomer"
+        clearable
         class="pd-10-15"
-      ></v-text-field>
+        @click:append-inner="onSearchCustomer"
+        @click:clear="onClearMessage"
+        @keypress="handleSearchEnter"
+      >
+        <template v-slot:append-inner>
+          <v-fade-transition leave-absolute>
+            <v-progress-circular v-if="searchLoading" indeterminate :size="22"></v-progress-circular>
+            <v-icon v-else icon="mdi-magnify"></v-icon>
+          </v-fade-transition>
+        </template>
+      </v-text-field>
       <v-divider></v-divider>
-      <v-list>
+      <v-list v-if="showSearch">
+        <v-sheet v-if="!searchedFriends.length">
+          <v-list-item active-color="primary" class="text-center mt-6 mb-6">
+            {{ searchPromptText }}
+          </v-list-item>
+          <v-divider></v-divider>
+        </v-sheet>
+        <v-list-item v-for="(item, index) of searchedFriends" :key="index" link active-color="primary" class="pa-3">
+          <template v-slot:prepend>
+            <v-avatar color="grey-lighten-1">
+              <v-icon icon="mdi-account-circle" :size="60" color="#dfe5e7"></v-icon>
+            </v-avatar>
+          </template>
+          <v-list-item-title>{{ item.username }}</v-list-item-title>
+          <v-list-item-subtitle>{{ item.phone }}</v-list-item-subtitle>
+        </v-list-item>
+      </v-list>
+      <v-list v-else>
         <v-list-item link active-color="primary" class="pa-3">
           <template v-slot:prepend>
             <v-avatar color="grey-lighten-1">
@@ -73,8 +99,8 @@
         <v-card-text> Are you sure you want to log out? </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="green-darken-1" variant="text" @click="logOutDialog = false"> Cancel </v-btn>
-          <v-btn color="green-darken-1" variant="text" @click="handleLogOut"> Log out </v-btn>
+          <v-btn color="green-darken-1" rounded variant="outlined" @click="logOutDialog = false"> Cancel </v-btn>
+          <v-btn color="green-darken-1" rounded variant="flat" @click="handleLogOut"> Log out </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -82,16 +108,29 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, ref } from 'vue'
+  import { ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { logout } from '@/api/auth/account'
+  import { searchFriends } from '@/api/chat/friend'
   import { useAuthStore } from '@/store/auth'
   import { useUserStore } from '@/store/user'
 
   const router = useRouter()
   const authStore = useAuthStore()
   const userStore = useUserStore()
-  const loading = ref(false)
+
+  const searchPromptText = ref('No chats, contacts or messages found')
+  const searchedFriends = ref([])
+  const page = ref({
+    total: 0, // 总页数
+    currentPage: 1, // 当前页数
+    pageSize: 20, // 每页显示多少条,
+    isAsc: false, //是否倒序
+  })
+  const searchLoading = ref(false)
+  const searchText = ref('')
+  // const innerIcon = ref('mdi-magnify')
+  const showSearch = ref(false)
   const logOutDialog = ref(false)
 
   function handleLogOut() {
@@ -107,7 +146,50 @@
       })
   }
 
-  function onSearchCustomer() {}
+  function onSearchCustomer(event: Event) {
+    event.preventDefault()
+    handleSearch()
+  }
+
+  function onClearMessage() {
+    searchText.value = ''
+    showSearch.value = false
+    searchedFriends.value = []
+    searchPromptText.value = 'No chats, contacts or messages found'
+  }
+
+  function handleSearchEnter(event: KeyboardEvent) {
+    if (event.key === 'Enter' && !event.ctrlKey) {
+      event.preventDefault()
+      handleSearch()
+    }
+  }
+
+  function handleSearch() {
+    searchPromptText.value = 'Searching chats, contacts and messages...'
+    searchLoading.value = true
+    showSearch.value = true
+
+    const params = {
+      current: page.value.currentPage,
+      size: page.value.pageSize,
+      username: searchText.value,
+    }
+    searchFriends(params)
+      .then((res: any) => {
+        if (res.data.records.length === 0) {
+          searchPromptText.value = 'No chats, contacts or messages found'
+        } else {
+          searchedFriends.value = res.data.records
+        }
+        searchLoading.value = false
+      })
+      .catch((err) => {
+        searchedFriends.value = []
+        searchPromptText.value = 'No chats, contacts or messages found'
+        searchLoading.value = false
+      })
+  }
 </script>
 
 <style lang="scss">

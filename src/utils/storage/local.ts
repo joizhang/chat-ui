@@ -51,7 +51,7 @@ export function createLocalStorage() {
 
   function remove(key: string) {
     // debugger
-    console.log("Remove " + key)
+    // console.log("Remove " + key)
     window.localStorage.removeItem(key)
   }
 

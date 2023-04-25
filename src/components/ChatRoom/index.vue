@@ -48,9 +48,18 @@
             <v-btn icon="mdi-attachment" color="#54656f"></v-btn>
           </v-col>
           <v-col cols="9">
-            <v-text-field ref="inputRef" v-model="inputMessage" density="comfortable" variant="outlined"
-              label="Input Message" append-inner-icon="mdi-send" single-line hide-details
-              @click:append-inner="handleSubmit" @keypress="handleEnter"></v-text-field>
+            <v-text-field
+              ref="inputRef"
+              v-model="inputMessage"
+              density="comfortable"
+              variant="outlined"
+              label="Input Message"
+              append-inner-icon="mdi-send"
+              single-line
+              hide-details
+              @click:append-inner="handleSubmit"
+              @keypress="handleEnter"
+            ></v-text-field>
           </v-col>
           <v-col cols="1" class="text-center">
             <v-btn icon="mdi-microphone" color="#54656f"></v-btn>
@@ -70,14 +79,14 @@
           Content
         </v-container>
         <v-container v-else style="position: absolute">
-          <chat-message  
-            v-for="(item, index) of dataSources" 
-            :key="index" 
-            :date-time="item.dateTime" 
+          <chat-message
+            v-for="(item, index) of dataSources"
+            :key="index"
+            :date-time="item.dateTime"
             :text="item.text"
-            :inversion="item.inversion" 
-            :error="item.error" 
-            :loading="item.loading" 
+            :inversion="item.inversion"
+            :error="item.error"
+            :loading="item.loading"
           />
         </v-container>
       </div>
@@ -86,61 +95,61 @@
 </template>
 
 <script lang="ts" setup>
-import type { Ref } from 'vue'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { storeToRefs } from 'pinia'
-import ChatMessage from '../ChatMessage/index.vue'
-import { useScroll } from './hooks/useScroll'
-import { useChat } from './hooks/useChat'
-import { useChatStore } from '@/store/chat'
+  import type { Ref } from 'vue'
+  import { computed, onMounted, onUnmounted, ref } from 'vue'
+  import { useRoute } from 'vue-router'
+  import { storeToRefs } from 'pinia'
+  import ChatMessage from '../ChatMessage/index.vue'
+  import { useScroll } from './hooks/useScroll'
+  import { useChat } from './hooks/useChat'
+  import { useChatStore } from '@/store/chat'
 
-const route = useRoute()
+  const route = useRoute()
 
-const chatStore = useChatStore()
+  const chatStore = useChatStore()
 
-const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
-const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll()
+  const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
+  const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll()
 
-const uuid = 1
-const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
+  const uuid = 1
+  const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
 
-const inputMessage = ref<string>('')
-const loading = ref<boolean>(false)
-const inputRef = ref<Ref | null>(null)
+  const inputMessage = ref<string>('')
+  const loading = ref<boolean>(false)
+  const inputRef = ref<Ref | null>(null)
 
-function handleSubmit() {
-  onConversation()
-}
-
-async function onConversation() {
-  let message = inputMessage.value
-  if (!message || message.trim() === '') {
-    return
+  function handleSubmit() {
+    onConversation()
   }
 
-  addChat(+uuid, {
-    dateTime: new Date().toLocaleString(),
-    text: message,
-    inversion: true,
-    error: false,
-    conversationOptions: null,
-    requestOptions: { prompt: message, options: null },
+  async function onConversation() {
+    let message = inputMessage.value
+    if (!message || message.trim() === '') {
+      return
+    }
+
+    addChat(+uuid, {
+      dateTime: new Date().toLocaleString(),
+      text: message,
+      inversion: true,
+      error: false,
+      conversationOptions: null,
+      requestOptions: { prompt: message, options: null },
+    })
+    scrollToBottom()
+    inputMessage.value = ''
+    console.log(dataSources.value)
+  }
+
+  function handleEnter(event: KeyboardEvent) {
+    if (event.key === 'Enter' && !event.ctrlKey) {
+      event.preventDefault()
+      handleSubmit()
+    }
+  }
+
+  onMounted(() => {
+    scrollToBottom()
+    if (inputRef.value) inputRef.value?.focus()
   })
-  scrollToBottom()
-  inputMessage.value = ''
-  console.log(dataSources.value)
-}
-
-function handleEnter(event: KeyboardEvent) {
-  if (event.key === 'Enter' && !event.ctrlKey) {
-    event.preventDefault()
-    handleSubmit()
-  }
-}
-
-onMounted(() => {
-  scrollToBottom()
-  if (inputRef.value) inputRef.value?.focus()
-})
 </script>

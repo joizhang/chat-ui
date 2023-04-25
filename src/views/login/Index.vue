@@ -54,7 +54,9 @@
                                   </v-col>
                                 </v-row>
                               </v-container>
-                              <v-btn type="submit" class="me-4" :loading="loginBtnLoading" @click="handlePasswordLogin">Submit</v-btn>
+                              <v-btn type="submit" class="me-4" :loading="loginBtnLoading" @click="handlePasswordLogin"
+                                >Submit</v-btn
+                              >
                               <v-btn @click="handlePasswdLoginFormReset">clear</v-btn>
                             </v-form>
                           </v-sheet>
@@ -167,7 +169,7 @@
     code: '',
     randomStr: '',
   })
-  
+
   const code = ref({
     src: 'api/code',
     value: '',
@@ -230,23 +232,23 @@
       return
     }
     loginBtnLoading.value = true
-    console.log(Object.values(passwdLoginForm.value))
+    // console.log(Object.values(passwdLoginForm.value))
     // debugger
     const data = encryption({
       data: passwdLoginForm.value,
       key: 'thanks,pig4cloud',
-      param: ['password']
+      param: ['password'],
     })
     const params: string[] = Object.values(data)
     loginByPassword(...params)
       .then((res: any) => {
-        console.log(res)
+        // console.log(res)
         if (res.code) {
           text.value = res.msg
           snackbar.value = true
           refreshCode()
           loginBtnLoading.value = false
-        } else{
+        } else {
           loginBtnLoading.value = false
           authStore.setAccessToken(res.access_token)
           userStore.updateUserInfo(res)
