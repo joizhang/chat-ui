@@ -33,6 +33,7 @@
         </v-row>
       </v-container>
     </v-app-bar>
+
     <v-navigation-drawer class="w-100">
       <v-text-field
         v-model="searchText"
@@ -62,7 +63,14 @@
           </v-list-item>
           <v-divider></v-divider>
         </v-sheet>
-        <v-list-item v-for="(item, index) of searchedFriends" :key="index" link active-color="primary" class="pa-3">
+        <v-list-item
+          v-for="(item, index) of searchedFriends"
+          :key="index"
+          link
+          active-color="primary"
+          class="pa-3"
+          @click="onSelectFriend(item)"
+        >
           <template v-slot:prepend>
             <v-avatar color="grey-lighten-1">
               <v-icon icon="mdi-account-circle" :size="60" color="#dfe5e7"></v-icon>
@@ -93,6 +101,7 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
+
     <v-dialog v-model="logOutDialog" width="450">
       <v-card>
         <v-card-title> Log out? </v-card-title>
@@ -104,6 +113,18 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="addFriendDialog" width="450">
+      <v-card>
+        <v-card-title> Add to contacts? </v-card-title>
+        <v-card-text>Add to contacts?</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="green-darken-1" rounded variant="outlined" @click="addFriendDialog = false"> Cancel </v-btn>
+          <v-btn color="green-darken-1" rounded variant="flat" @click="handleAddFriend"> Select </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-layout>
 </template>
 
@@ -111,9 +132,12 @@
   import { ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { logout } from '@/api/auth/account'
+  // import { checkFriend } from '@/api/chat/friend'
   import { searchFriends } from '@/api/chat/friend'
   import { useAuthStore } from '@/store/auth'
   import { useUserStore } from '@/store/user'
+
+  const emit = defineEmits(['popupMessage', 'addFriend', 'selectFriend'])
 
   const router = useRouter()
   const authStore = useAuthStore()
@@ -132,6 +156,8 @@
   // const innerIcon = ref('mdi-magnify')
   const showSearch = ref(false)
   const logOutDialog = ref(false)
+  const addFriendDialog = ref(false)
+  const friendRequestData = ref({})
 
   function handleLogOut() {
     logout()
@@ -142,7 +168,10 @@
         router.push('/login')
       })
       .catch((err) => {
-        console.log(err)
+        authStore.removeAccessToken()
+        userStore.removeUserInfo()
+        logOutDialog.value = false
+        router.push('/login')
       })
   }
 
@@ -156,6 +185,7 @@
     showSearch.value = false
     searchedFriends.value = []
     searchPromptText.value = 'No chats, contacts or messages found'
+    friendRequestData.value = {}
   }
 
   function handleSearchEnter(event: KeyboardEvent) {
@@ -189,6 +219,21 @@
         searchPromptText.value = 'No chats, contacts or messages found'
         searchLoading.value = false
       })
+  }
+
+  function onSelectFriend(friend: any) {
+    addFriendDialog.value = true
+    friendRequestData.value = {
+      userId: userStore.user_info.id,
+      friendId: friend.id,
+      remark: '',
+      requestStatus: 1,
+    }
+  }
+
+  function handleAddFriend() {
+    emit('addFriend', friendRequestData)
+    addFriendDialog.value = false
   }
 </script>
 

@@ -38,7 +38,7 @@ export default defineConfig((env) =>{
       ],
     },
     server: {
-      port: 3000,
+      port: 8080,
       proxy: {
         '/api': {
           target: viteEnv.VITE_APP_API_BASE_URL,

@@ -135,13 +135,13 @@
         </v-card>
       </v-col>
     </v-row>
-    <v-snackbar v-model="snackbar">
-      {{ text }}
-      <template v-slot:actions>
-        <v-btn color="pink" variant="text" @click="snackbar = false"> Close </v-btn>
-      </template>
-    </v-snackbar>
   </v-container>
+  <v-snackbar v-model="loginSnackbar">
+    {{ errorMsg }}
+    <template v-slot:actions>
+      <v-btn color="pink" variant="text" @click="loginSnackbar = false"> Close </v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script lang="ts" setup>
@@ -160,8 +160,8 @@
   const smsLoginFormRef = ref(null)
   const registerFormRef = ref(null)
   const loginBtnLoading = ref(false)
-  const snackbar = ref(false)
-  const text = ref('')
+  const loginSnackbar = ref(false)
+  const errorMsg = ref('')
 
   const passwdLoginForm = ref({
     username: '',
@@ -244,8 +244,8 @@
       .then((res: any) => {
         // console.log(res)
         if (res.code) {
-          text.value = res.msg
-          snackbar.value = true
+          errorMsg.value = res.msg
+          loginSnackbar.value = true
           refreshCode()
           loginBtnLoading.value = false
         } else {
@@ -257,8 +257,8 @@
       })
       .catch((err) => {
         console.error(err)
-        text.value = err.response.data.msg
-        snackbar.value = true
+        errorMsg.value = err.response.data.msg
+        loginSnackbar.value = true
         loginBtnLoading.value = false
         refreshCode()
       })
@@ -291,15 +291,15 @@
     registerUser(registerForm.value)
       .then((res: any) => {
         if (res.code) {
-          text.value = res.msg
-          snackbar.value = true
+          errorMsg.value = res.msg
+          loginSnackbar.value = true
         } else {
           handleRegisterFormReset()
         }
       })
       .catch((err) => {
-        text.value = err.response.data.msg
-        snackbar.value = true
+        errorMsg.value = err.response.data.msg
+        loginSnackbar.value = true
       })
   }
 

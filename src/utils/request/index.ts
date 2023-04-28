@@ -26,7 +26,7 @@ function http<T = any>({
   data,
   onDownloadProgress,
   signal,
-}: HttpOption) {
+}: HttpOption): Promise<AxiosResponse<T, T>> {
   method = method || 'GET'
   data = Object.assign(typeof data === 'function' ? data() : data ?? {}, {})
   if (method === 'POST') {

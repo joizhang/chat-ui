@@ -69,12 +69,16 @@
     </v-app-bar>
 
     <v-main>
+      <v-alert
+        v-if="!props.connected"
+        type="error"
+        position="absolute"
+        width="100%"
+        variant="tonal"
+        text="Network connection failed."
+        style="z-index: 1"
+      ></v-alert>
       <div id="scrollRef" ref="scrollRef" class="h-100 overflow-hidden overflow-y-auto" style="position: relative">
-        <!-- <v-container style="position: absolute">
-          <v-row v-for="(num, index) of Array.from(Array(50).keys())" :key="index">
-            <v-col :justify="index % 2 ===0 ? 'start' : 'end'" :class="index % 2 ===0 ? 'text-left' : 'text-right'">asdasdasdasd {{ index }}</v-col>
-          </v-row>
-        </v-container> -->
         <v-container v-if="!dataSources.length" class="d-flex justify-center align-center text-h5 h-100">
           Content
         </v-container>
@@ -98,21 +102,24 @@
   import type { Ref } from 'vue'
   import { computed, onMounted, onUnmounted, ref } from 'vue'
   import { useRoute } from 'vue-router'
-  import { storeToRefs } from 'pinia'
+  // import { storeToRefs } from 'pinia'
   import ChatMessage from '../ChatMessage/index.vue'
   import { useScroll } from './hooks/useScroll'
   import { useChat } from './hooks/useChat'
   import { useChatStore } from '@/store/chat'
 
+  const props = defineProps({
+    connected: Boolean,
+  })
+
   const route = useRoute()
-
   const chatStore = useChatStore()
-
   const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
   const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll()
 
   const uuid = 1
-  const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
+  // const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
+  const dataSources = ref([])
 
   const inputMessage = ref<string>('')
   const loading = ref<boolean>(false)
@@ -133,8 +140,8 @@
       text: message,
       inversion: true,
       error: false,
-      conversationOptions: null,
-      requestOptions: { prompt: message, options: null },
+      // conversationOptions: null,
+      // requestOptions: { prompt: message, options: null },
     })
     scrollToBottom()
     inputMessage.value = ''

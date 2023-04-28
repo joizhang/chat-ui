@@ -19,7 +19,9 @@ export interface UserInfo {
 
 export interface UserState {
   access_token: string
+  expires_in: number
   refresh_token: string
+  scope: string | []
   token_type: string
   user_info: UserInfo
 }
@@ -27,8 +29,10 @@ export interface UserState {
 export function defaultSetting(): UserState {
   return {
     access_token: '',
+    expires_in: 0,
     refresh_token: '',
     token_type: '',
+    scope: '',
     user_info: {
       accountNonExpired: true,
       accountNonLocked: true,
