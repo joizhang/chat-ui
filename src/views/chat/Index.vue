@@ -46,7 +46,6 @@
   import { getMessageHistory } from '@/api/message/one'
   import { useAuthStore } from '@/store/auth'
   import { useUserStore } from '@/store/user'
-  import { useChatStore } from '@/store/chat'
   // import { liveQuery } from 'dexie'
   import { db } from '@/utils/db'
   // import website from '@/config/website'
@@ -57,7 +56,6 @@
   const router = useRouter()
   const authStore = useAuthStore()
   const userStore = useUserStore()
-  const chatStore = useChatStore()
 
   const dataLoading = ref(true)
   const connected = ref(true)
