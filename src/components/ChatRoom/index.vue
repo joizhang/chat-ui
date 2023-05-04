@@ -102,7 +102,6 @@
   import { useScroll } from './hooks/useScroll'
   import { useChat } from './hooks/useChat'
   import { useUserStore } from '@/store/user'
-  // import { useChatStore } from '@/store/chat'
 
   const props = defineProps({
     connected: Boolean,
@@ -114,7 +113,6 @@
 
   const active = computed(() => Object.keys(props.currentUser).length !== 0)
   // const route = useRoute()
-  // const chatStore = useChatStore()
   const userStore = useUserStore()
   // const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
   const { scrollRef, scrollToBottom } = useScroll()
