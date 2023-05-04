@@ -56,6 +56,7 @@
         </template>
       </v-text-field>
       <v-divider></v-divider>
+      <!-- 搜索列表 -->
       <v-list v-if="showSearch">
         <v-sheet v-if="!searchedFriends.length">
           <v-list-item active-color="primary" class="text-center mt-6 mb-6">
@@ -69,7 +70,7 @@
           link
           active-color="primary"
           class="pa-3"
-          @click="onSelectFriend(item)"
+          @click="onSelectSearchedFriend(item)"
         >
           <template v-slot:prepend>
             <v-avatar color="grey-lighten-1">
@@ -80,24 +81,24 @@
           <v-list-item-subtitle>{{ item.phone }}</v-list-item-subtitle>
         </v-list-item>
       </v-list>
+
+      <!-- 会话列表 -->
       <v-list v-else>
-        <v-list-item link active-color="primary" class="pa-3">
+        <v-list-item
+          v-for="(item, index) of chatList"
+          :key="index"
+          link
+          active-color="primary"
+          class="pa-3"
+          @click="onSelectChat(item)"
+        >
           <template v-slot:prepend>
             <v-avatar color="grey-lighten-1">
               <v-icon icon="mdi-account-circle" :size="60" color="#dfe5e7"></v-icon>
             </v-avatar>
           </template>
-          <v-list-item-title>121231231</v-list-item-title>
-          <v-list-item-subtitle>121231231</v-list-item-subtitle>
-        </v-list-item>
-        <v-list-item link active-color="primary" class="pa-3">
-          <template v-slot:prepend>
-            <v-avatar color="grey-lighten-1">
-              <v-icon icon="mdi-account-circle" :size="60" color="#dfe5e7"></v-icon>
-            </v-avatar>
-          </template>
-          <v-list-item-title>121231231</v-list-item-title>
-          <v-list-item-subtitle>121231231</v-list-item-subtitle>
+          <v-list-item-title>{{ item.username }}</v-list-item-title>
+          <v-list-item-subtitle>{{ item.title }}</v-list-item-subtitle>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -131,11 +132,16 @@
 <script lang="ts" setup>
   import { ref } from 'vue'
   import { useRouter } from 'vue-router'
+  import { DateTime } from 'luxon'
   import { logout } from '@/api/auth/account'
   // import { checkFriend } from '@/api/chat/friend'
-  import { searchFriends } from '@/api/chat/friend'
+  import { searchFriends, checkFriend } from '@/api/chat/friend'
   import { useAuthStore } from '@/store/auth'
   import { useUserStore } from '@/store/user'
+
+  defineProps({
+    chatList: Array,
+  })
 
   const emit = defineEmits(['popupMessage', 'addFriend', 'selectFriend'])
 
@@ -221,19 +227,65 @@
       })
   }
 
-  function onSelectFriend(friend: any) {
-    addFriendDialog.value = true
-    friendRequestData.value = {
-      userId: userStore.user_info.id,
-      friendId: friend.id,
-      remark: '',
-      requestStatus: 1,
+  function onSelectSearchedFriend(friend: any) {
+    const userId = userStore.user_info.id
+    if (friend.id === userId) {
+      // 如果选中的是自己
+      // console.log(friend)
+      const now = DateTime.now()
+      const chatSession = {
+        id: `${friend.id}_${userId}`,
+        userId: userId,
+        friendId: friend.id,
+        username: friend.username,
+        phone: friend.phone,
+        avatar: friend.avatar,
+        title: '',
+        lastChatTime: now.toFormat('yyyy-MM-dd HH:mm:ss'),
+      }
+      emit('selectFriend', chatSession)
+      onClearMessage()
+    } else {
+      // 如果选中的不是自己
+      // 是否是朋友
+      checkFriend(userId, friend.id).then((res: any) => {
+        console.log(res.data)
+        if (res.data) {
+          // 是朋友直接打开对话
+          const now = DateTime.now()
+          const chatSession = {
+            id: `${friend.id}_${userId}`,
+            userId: userId,
+            friendId: friend.id,
+            username: friend.username,
+            phone: friend.phone,
+            avatar: friend.avatar,
+            title: '',
+            lastChatTime: now.toFormat('yyyy-MM-dd HH:mm:ss'),
+          }
+          emit('selectFriend', chatSession)
+          onClearMessage()
+        } else {
+          // 不是朋友弹出添加朋友的提示
+          addFriendDialog.value = true
+          friendRequestData.value = {
+            userId: userStore.user_info.id,
+            friendId: friend.id,
+            remark: '',
+            requestStatus: 1,
+          }
+        }
+      })
     }
   }
 
   function handleAddFriend() {
     emit('addFriend', friendRequestData)
     addFriendDialog.value = false
+  }
+
+  function onSelectChat(chatSession: any) {
+    emit('selectFriend', chatSession)
   }
 </script>
 

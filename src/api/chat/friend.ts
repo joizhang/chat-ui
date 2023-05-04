@@ -11,7 +11,7 @@ export function searchFriends<T = any>(params: any, signal?: GenericAbortSignal)
 }
 
 // 好友是否存在
-export function checkFriend<T = any>(userId: number, friendId: number, signal?: GenericAbortSignal) {
+export function checkFriend<T = any>(userId: string, friendId: string, signal?: GenericAbortSignal) {
   return get<T>({
     url: '/chat/svc/friend/exist',
     params: { userId, friendId },
@@ -30,7 +30,7 @@ export function addFriendRequest<T = any>(data: any, signal?: GenericAbortSignal
 }
 
 // 删除好友
-export function deleteFriend<T = any>(friendId: number, signal?: GenericAbortSignal) {
+export function deleteFriend<T = any>(friendId: string, signal?: GenericAbortSignal) {
   return del<T>({
     url: '/chat/svc/friend/delete',
     params: { friendId },

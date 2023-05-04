@@ -1,10 +1,11 @@
 <template>
-  <v-layout class="h-100">
+  <v-layout v-if="active" class="h-100">
     <v-app-bar flat style="background-color: #f0f2f5">
       <v-container>
         <v-row>
           <v-col cols="2">
             <v-icon icon="mdi-account-circle" :size="46" color="#dfe5e7"></v-icon>
+            {{ currentUser.username }}
           </v-col>
           <v-col cols="1" offset="8" class="text-center">
             <v-btn icon="mdi-magnify" color="#54656f"></v-btn>
@@ -70,7 +71,7 @@
 
     <v-main>
       <v-alert
-        v-if="!props.connected"
+        v-if="!connected"
         type="error"
         position="absolute"
         width="100%"
@@ -79,54 +80,62 @@
         style="z-index: 1"
       ></v-alert>
       <div id="scrollRef" ref="scrollRef" class="h-100 overflow-hidden overflow-y-auto" style="position: relative">
-        <v-container v-if="!dataSources.length" class="d-flex justify-center align-center text-h5 h-100">
+        <v-container v-if="!chatMessages.length" class="d-flex justify-center align-center text-h5 h-100">
           Content
         </v-container>
         <v-container v-else style="position: absolute">
-          <chat-message
-            v-for="(item, index) of dataSources"
-            :key="index"
-            :date-time="item.dateTime"
-            :text="item.text"
-            :inversion="item.inversion"
-            :error="item.error"
-            :loading="item.loading"
-          />
+          <chat-message v-for="(item, index) of chatMessages" :key="index" :message="item" />
         </v-container>
       </div>
     </v-main>
   </v-layout>
+  <v-layout v-else class="h-100" style="background-color: #f0f2f5"> </v-layout>
 </template>
 
 <script lang="ts" setup>
   import type { Ref } from 'vue'
-  import { computed, onMounted, onUnmounted, ref } from 'vue'
-  import { useRoute } from 'vue-router'
+  import { computed, onMounted, ref } from 'vue'
+  import { DateTime } from 'luxon'
+  // import { useRoute } from 'vue-router'
   // import { storeToRefs } from 'pinia'
   import ChatMessage from '../ChatMessage/index.vue'
   import { useScroll } from './hooks/useScroll'
   import { useChat } from './hooks/useChat'
-  import { useChatStore } from '@/store/chat'
+  import { useUserStore } from '@/store/user'
+  // import { useChatStore } from '@/store/chat'
 
   const props = defineProps({
     connected: Boolean,
+    currentUser: Object,
+    chatMessages: Array,
   })
 
-  const route = useRoute()
-  const chatStore = useChatStore()
-  const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
-  const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll()
+  const emit = defineEmits(['popupMessage', 'sendMessage'])
 
-  const uuid = 1
-  // const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
-  const dataSources = ref([])
+  const active = computed(() => Object.keys(props.currentUser).length !== 0)
+  // const route = useRoute()
+  // const chatStore = useChatStore()
+  const userStore = useUserStore()
+  // const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
+  const { scrollRef, scrollToBottom } = useScroll()
 
   const inputMessage = ref<string>('')
-  const loading = ref<boolean>(false)
+  // const loading = ref<boolean>(false)
   const inputRef = ref<Ref | null>(null)
 
   function handleSubmit() {
     onConversation()
+  }
+
+  function parseDateTime(time: string) {
+    const date = new Date(time)
+    const day = date.getDate()
+    const month = date.getMonth() + 1
+    const year = date.getFullYear()
+    const hours = date.getHours()
+    const minutes = date.getMinutes()
+    const second = date.getSeconds()
+    return `${year}-${month}-${day} ${hours}:${minutes}:${second}`
   }
 
   async function onConversation() {
@@ -134,18 +143,26 @@
     if (!message || message.trim() === '') {
       return
     }
+    console.log(props.currentUser)
+    if (!props.currentUser) {
+      emit('popupMessage', 'Invalid chat object')
+      return
+    }
 
-    addChat(+uuid, {
-      dateTime: new Date().toLocaleString(),
-      text: message,
+    const now = DateTime.now()
+    const messageToSend = {
+      senderId: userStore.user_info.id,
+      receiverId: props.currentUser.friendId,
+      content: message,
+      contentType: 2,
+      createTime: now.toFormat('yyyy-MM-dd HH:mm:ss'),
+      error: '',
       inversion: true,
-      error: false,
-      // conversationOptions: null,
-      // requestOptions: { prompt: message, options: null },
-    })
+      loading: false,
+    }
+    emit('sendMessage', messageToSend)
     scrollToBottom()
     inputMessage.value = ''
-    console.log(dataSources.value)
   }
 
   function handleEnter(event: KeyboardEvent) {
@@ -156,6 +173,7 @@
   }
 
   onMounted(() => {
+    // console.log(Object.keys(props.currentUser).length === 0)
     scrollToBottom()
     if (inputRef.value) inputRef.value?.focus()
   })

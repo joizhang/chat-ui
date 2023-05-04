@@ -145,7 +145,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, onMounted, ref } from 'vue'
+  import { onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { useAuthStore } from '@/store/auth'
   import { useUserStore } from '@/store/user'

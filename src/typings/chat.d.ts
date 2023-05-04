@@ -20,11 +20,11 @@ declare namespace Chat {
 
   interface ChatState {
     // 当前活跃的聊天
-    active: number | null
+    active: number
     // 会话列表最大限度
-    chatListCapacity: number
+    // chatListCapacity: number
     // 会话列表
-    chatList: any
+    // chatList: any
     // 聊天记录
     // chatHistory: { uuid: number; data: Message[] }[]
     // 服务器存根ID

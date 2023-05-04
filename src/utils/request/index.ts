@@ -115,5 +115,3 @@ export function put<T = any>({
     signal,
   })
 }
-
-export default post
