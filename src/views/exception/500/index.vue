@@ -1,16 +1,16 @@
 <template>
-  <v-container class="h-100 d-flex">
-    <v-row class="mt-auto mb-auto">
-      <v-col cols="4" offset="4" class="h-100 text-center">
-        <h2 class="text-2xl font-bold text-center text-slate-800 dark:text-neutral-200">500</h2>
-        <p class="text-base text-center text-slate-500 dark:text-slate-500">Server error</p>
-        <div class="flex items-center justify-center text-center">
-          <Icon500 style="width: 500px; margin: 0 auto;"/>
-        </div>
+  <div class="d-flex flex-column mb-6 h-100">
+    <div class="ma-auto text-center">
+      <h1>500</h1>
+      <p>Server error</p>
+      <div>
+        <Icon500 style="width: 500px;" />
+      </div>
+      <div>
         <v-btn type="primary" @click="goHome"> Go to Home </v-btn>
-      </v-col>
-    </v-row>
-  </v-container>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
