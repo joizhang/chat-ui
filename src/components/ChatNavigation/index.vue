@@ -83,15 +83,8 @@
       </v-list>
 
       <!-- 会话列表 -->
-      <v-list v-else>
-        <v-list-item
-          v-for="(item, index) of chatList"
-          :key="index"
-          link
-          active-color="primary"
-          class="pa-3"
-          @click="onSelectChat(item)"
-        >
+      <v-list v-else @click:select="onSelectChat">
+        <v-list-item v-for="(item, index) of chatList" :key="index" :value="item" link class="pa-3">
           <template v-slot:prepend>
             <v-avatar color="grey-lighten-1">
               <v-icon icon="mdi-account-circle" :size="60" color="#dfe5e7"></v-icon>
@@ -130,20 +123,24 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue'
+  import { computed, ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { DateTime } from 'luxon'
+  import website from '@/config/website'
   import { logout } from '@/api/auth/account'
-  // import { checkFriend } from '@/api/chat/friend'
   import { searchFriends, checkFriend } from '@/api/chat/friend'
   import { useAuthStore } from '@/store/auth'
   import { useUserStore } from '@/store/user'
 
-  defineProps({
-    chatList: Array,
+  const props = defineProps({
+    chatMap: Map,
   })
 
   const emit = defineEmits(['popupMessage', 'addFriend', 'selectFriend'])
+
+  const chatList = computed(() => {
+    return Array.from(props.chatMap.values()).reverse()
+  })
 
   const router = useRouter()
   const authStore = useAuthStore()
@@ -173,7 +170,7 @@
         logOutDialog.value = false
         router.push('/login')
       })
-      .catch((err) => {
+      .catch(() => {
         authStore.removeAccessToken()
         userStore.removeUserInfo()
         logOutDialog.value = false
@@ -249,7 +246,7 @@
       // 如果选中的不是自己
       // 是否是朋友
       checkFriend(userId, friend.id).then((res: any) => {
-        console.log(res.data)
+        // console.log(res.data)
         if (res.data) {
           // 是朋友直接打开对话
           const now = DateTime.now()
@@ -272,7 +269,8 @@
             userId: userStore.user_info.id,
             friendId: friend.id,
             remark: '',
-            requestStatus: 1,
+            requestStatus: website.requestStatus.PENDING,
+            seqNum: Date.now(),
           }
         }
       })
@@ -284,7 +282,9 @@
     addFriendDialog.value = false
   }
 
-  function onSelectChat(chatSession: any) {
+  function onSelectChat(e: any) {
+    console.log(e)
+    const chatSession = e.id
     emit('selectFriend', chatSession)
   }
 </script>

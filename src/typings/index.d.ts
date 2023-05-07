@@ -11,11 +11,14 @@ declare namespace Chat {
 
   /** 会话 */
   interface ChatSession {
-    friendId: string
+    id: string
+    userId: number
+    friendId: number
     username: string
     phone: string
     avatar: string
     title: string
+    lastChatTime: number
   }
 
   interface ChatState {

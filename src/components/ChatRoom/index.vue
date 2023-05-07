@@ -100,7 +100,7 @@
   // import { storeToRefs } from 'pinia'
   import ChatMessage from '../ChatMessage/index.vue'
   import { useScroll } from './hooks/useScroll'
-  import { useChat } from './hooks/useChat'
+  // import { useChat } from './hooks/useChat'
   import { useUserStore } from '@/store/user'
 
   const props = defineProps({
@@ -125,23 +125,12 @@
     onConversation()
   }
 
-  function parseDateTime(time: string) {
-    const date = new Date(time)
-    const day = date.getDate()
-    const month = date.getMonth() + 1
-    const year = date.getFullYear()
-    const hours = date.getHours()
-    const minutes = date.getMinutes()
-    const second = date.getSeconds()
-    return `${year}-${month}-${day} ${hours}:${minutes}:${second}`
-  }
-
   async function onConversation() {
     let message = inputMessage.value
     if (!message || message.trim() === '') {
       return
     }
-    console.log(props.currentUser)
+    // console.log(props.currentUser)
     if (!props.currentUser) {
       emit('popupMessage', 'Invalid chat object')
       return
