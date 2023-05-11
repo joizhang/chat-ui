@@ -40,7 +40,7 @@
 <script lang="ts" setup>
   import { onMounted, onUnmounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
-  // import type { ChatSession } from  '@/typings'
+  import { DateTime } from 'luxon'
   import { checkToken, refreshToken } from '@/api/auth/account'
   import { addFriendRequest, getSenders } from '@/api/chat/friend'
   import { getMessageHistory } from '@/api/message/one'
@@ -50,7 +50,7 @@
   import website from '@/config/website'
   import ChatNavigation from '@/components/ChatNavigation/index.vue'
   import ChatRoom from '@/components/ChatRoom/index.vue'
-  import { DateTime } from 'luxon'
+  import { ChatMessage, ChatSession, FriendRequest } from '#/db'
 
   const halfAnHour = 30 * 60 * 1000
 
@@ -61,13 +61,13 @@
   const dataLoading = ref(true)
   const connected = ref(true)
   // 使用Map实现LRU缓存
-  const chatMap = ref(new Map<string, Object>())
+  const chatMap = ref(new Map<string, ChatSession>())
   // 当前聊天对象
-  const currentUser = ref({})
+  const currentUser = ref<ChatSession>()
   // 聊天记录
-  const chatMessages = ref([])
+  const chatMessages = ref<Array<ChatMessage>>([])
   // 在途消息
-  const inflightMessage = ref(new Map<string, any>())
+  const inflightMessages = ref(new Map<string, ChatMessage>())
   // 错误信息弹出框
   const chatSnackbar = ref(false)
   const errorMsg = ref('')
@@ -107,7 +107,7 @@
     }
     // Listen for messages
     socket.onmessage = async (event: any) => {
-      console.log('Message ', event)
+      // console.log('Message ', event)
       try {
         const message = JSON.parse(event.data)
         if (message.contentType === website.contentType.ERROR) {
@@ -124,27 +124,56 @@
             message.contentType = 2
             message.content = "We are friends now, let's start chatting."
           }
-          const key = `${message.senderId}_${message.receiverId}`
-          if (!chatMap.value.has(key)) {
-            await storeChatList([message])
-            const chatFromDB = db.chatList.get({id: key})
-            chatMap.value.set(key, chatFromDB)
+          
+          const chatMapKey = `${message.senderId}_${message.receiverId}`
+          if (!chatMap.value.has(chatMapKey)) {
+            await storeChatSessions([message])
+            const chatSessionFromDB: ChatSession = await db.chatSession.get({ id: chatMapKey })
+            chatMap.value.set(chatMapKey, chatSessionFromDB)
           } else {
-            const curChat = chatMap.value.get(key)
-            curChat.lastChatTime = message.createTime
-            curChat.title = message.content
+            const curChatSession = chatMap.value.get(chatMapKey)!
+            curChatSession.lastChatTime = message.createTime
+            curChatSession.title = message.content
           }
           // setChatMap()
-          storeMessageHistory([message])
+          storeMessages([message])
           updateUserServerStubId([message])
         } else if (message.contentType === website.contentType.ACK) {
-          // TODO 处理消息ACK
-        } else {
-          if (!chatMap.value.has(message.senderId)) {
-            storeChatList([message])
+          const messageKey = message.content
+          if (inflightMessages.value.has(messageKey)) {
+            const msg: ChatMessage = inflightMessages.value.get(messageKey)!
+            inflightMessages.value.delete(messageKey)
+            msg.id = message.id
+            msg.loading = false
+            msg.ack = true
+            storeMessages([msg])
+            updateUserServerStubId([msg])
           }
+        } else {
+          // 更新chatMap
+          const chatMapKey = `${message.senderId}_${message.receiverId}`
+          if (!chatMap.value.has(chatMapKey)) {
+            await storeChatSessions([message])
+            const chatSessionFromDB: ChatSession = await db.chatSession.get({ id: chatMapKey })
+            chatMap.value.set(chatMapKey, chatSessionFromDB)
+          } else {
+            const curChatSession = chatMap.value.get(chatMapKey)!
+            curChatSession.lastChatTime = message.createTime
+            curChatSession.title = message.content
+            // 更新DB
+            const chatSessionFromDB = await db.chatSession.get(curChatSession.id)
+            chatSessionFromDB.lastChatTime = message.createTime
+            chatSessionFromDB.title = message.content
+            db.chatSession.put(chatSessionFromDB)
+          }
+          // 更新chatMessages
+          console.log(currentUser, message)
+          if (currentUser.value && currentUser.value.friendId == message.senderId) {
+            chatMessages.value.push(message)
+          }
+
           // setChatMap()
-          storeMessageHistory([message])
+          storeMessages([message])
           updateUserServerStubId([message])
         }
       } catch (error: any) {
@@ -179,7 +208,7 @@
     }
   }
 
-  async function storeChatList(messageHistory: Array<any>) {
+  async function storeChatSessions(messageHistory: Array<any>) {
     if (messageHistory.length === 0) return
     const messageMap = new Map<string, string>()
     for (let i = 0; i < messageHistory.length; i++) {
@@ -192,7 +221,7 @@
       // TODO 修改为从本地联系人中获取信息
       const res = await getSenders(Array.from(senderIds))
       const senders = res.data
-      const chatListTemp = []
+      const chatSessions = []
       for (let entry of messageMap.entries()) {
         const senderId = entry[0]
         const message: any = entry[1]
@@ -213,12 +242,12 @@
               title: title,
               lastChatTime: message.createTime,
             }
-            chatListTemp.push(chatSession)
+            chatSessions.push(chatSession)
             continue
           }
         }
       }
-      await db.chatList.bulkPut(chatListTemp)
+      await db.chatSession.bulkPut(chatSessions)
     } catch (error: any) {
       console.log(error)
       chatSnackbar.value = true
@@ -228,17 +257,17 @@
 
   async function setChatMap() {
     const userId = userStore.user_info.id
-    const chatListFromDB = await db.chatSession.where({ userId: userId }).toArray()
+    const chatSessionsFromDB = await db.chatSession.where({ userId: userId }).toArray()
     // 按照上次聊天时间升序排序
-    chatListFromDB.sort((a, b) => {
+    chatSessionsFromDB.sort((a, b) => {
       return new Date(a.lastChatTime).getTime() - new Date(b.lastChatTime).getTime()
     })
-    for (let curChat of chatListFromDB) {
+    for (let curChat of chatSessionsFromDB) {
       chatMap.value.set(curChat.id, curChat)
     }
   }
 
-  async function storeMessageHistory(messageHistory: Array<any>) {
+  async function storeMessages(messageHistory: Array<any>) {
     if (messageHistory.length === 0) return
     const userId = userStore.user_info.id
     for (let message of messageHistory) {
@@ -259,7 +288,7 @@
         inversion: message.senderId === userId,
         error: '',
         loading: false,
-        ack: true
+        ack: true,
       })
     }
   }
@@ -273,21 +302,23 @@
     })
   }
 
-  function handleAddFriend(friendRequestData: any) {
+  function handleAddFriend(friendRequestData: FriendRequest) {
     const messageKey = `${friendRequestData.userId}_${friendRequestData.friendId}_${friendRequestData.seqNum}`
-    const message = {
+    const message: ChatMessage = {
+      id: '',
       senderId: friendRequestData.userId,
       receiverId: friendRequestData.friendId,
+      seqNum: friendRequestData.seqNum,
       content: website.requestStatus.PENDING,
       contentType: website.contentType.FRIEND_REQ,
       createTime: DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss'),
-      inversion: false,
+      inversion: true,
       error: '',
       loading: true,
       ack: false,
     }
-    inflightMessage.value.set(messageKey, message)
-    addFriendRequest(friendRequestData.value)
+    inflightMessages.value.set(messageKey, message)
+    addFriendRequest(friendRequestData)
       .then((res: any) => {
         if (res.code === 1) {
           errorMsg.value = res.msg
@@ -339,16 +370,31 @@
     }
   }
 
-  function handleSendMessage(messageToSend: any) {
+  async function handleSendMessage(messageToSend: ChatMessage) {
+    // 更新chatMap
+    const chatMapKey = `${messageToSend.receiverId}_${messageToSend.senderId}`
+    if (chatMap.value.has(chatMapKey)) {
+      const curChatSession = chatMap.value.get(chatMapKey)!
+      curChatSession.lastChatTime = messageToSend.createTime
+      curChatSession.title = messageToSend.content
+      // 更新DB
+      const chatSessionFromDB = await db.chatSession.get(curChatSession.id)
+      chatSessionFromDB.lastChatTime = messageToSend.createTime
+      chatSessionFromDB.title = messageToSend.content
+      db.chatSession.put(chatSessionFromDB)
+    }
+    // 发送消息
     const message = {
       senderId: messageToSend.senderId,
       receiverId: messageToSend.receiverId,
       content: messageToSend.content,
       contentType: messageToSend.contentType,
+      seqNum: messageToSend.seqNum,
     }
+    const messageKey = `${messageToSend.senderId}_${messageToSend.receiverId}_${messageToSend.seqNum}`
+    inflightMessages.value.set(messageKey, messageToSend)
     socket.send(JSON.stringify(message))
     chatMessages.value.push(messageToSend)
-    // console.log('发送消息', message)
   }
 
   onMounted(async () => {
@@ -358,13 +404,13 @@
     // 初始化Websocket
     await initWebsocket()
     // 同步最新的消息
-    const messageHistory = await syncMessage()
+    const messageHistory: Array<any> = await syncMessage()
     // 持久化并更新会话列表
-    await storeChatList(messageHistory)
+    await storeChatSessions(messageHistory)
     // 设置会话列表
     await setChatMap()
     // 持久化消息
-    await storeMessageHistory(messageHistory)
+    await storeMessages(messageHistory)
     // 更新用户存根ID
     await updateUserServerStubId(messageHistory)
     dataLoading.value = false

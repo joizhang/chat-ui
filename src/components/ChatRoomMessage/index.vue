@@ -26,22 +26,24 @@
 </template>
 
 <script lang="ts" setup>
-  import { useUserStore } from '@/store/user'
+  // import { useUserStore } from '@/store/user'
   import { addFriendRequest } from '@/api/chat/friend'
+  // import { ChatMessage } from '#/db'
 
   const props = defineProps({
-    message: Object
+    message: Object,
   })
 
-  const userStore = useUserStore()
+  // const userStore = useUserStore()
 
   function handleFriendRequest() {
     // 现在是消息的接受者回应请求
     const friendRequestData = {
-      userId: props.message.receiverId,
-      friendId: props.message.senderId,
+      userId: props.message!.receiverId,
+      friendId: props.message!.senderId,
       remark: '',
       requestStatus: 2,
+      seqNum: String(Date.now()),
     }
     addFriendRequest(friendRequestData).then((res) => {
       console.log(res)

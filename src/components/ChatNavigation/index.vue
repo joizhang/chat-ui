@@ -131,15 +131,16 @@
   import { searchFriends, checkFriend } from '@/api/chat/friend'
   import { useAuthStore } from '@/store/auth'
   import { useUserStore } from '@/store/user'
+  import { ChatSession, FriendRequest } from '#/db'
 
   const props = defineProps({
-    chatMap: Map,
+    chatMap: Map<String, ChatSession>,
   })
 
   const emit = defineEmits(['popupMessage', 'addFriend', 'selectFriend'])
 
   const chatList = computed(() => {
-    return Array.from(props.chatMap.values()).reverse()
+    return Array.from(props.chatMap!.values()).reverse()
   })
 
   const router = useRouter()
@@ -160,7 +161,7 @@
   const showSearch = ref(false)
   const logOutDialog = ref(false)
   const addFriendDialog = ref(false)
-  const friendRequestData = ref({})
+  const friendRequestData = ref<FriendRequest>()
 
   function handleLogOut() {
     logout()
@@ -188,7 +189,7 @@
     showSearch.value = false
     searchedFriends.value = []
     searchPromptText.value = 'No chats, contacts or messages found'
-    friendRequestData.value = {}
+    friendRequestData.value = undefined
   }
 
   function handleSearchEnter(event: KeyboardEvent) {
@@ -264,26 +265,26 @@
           onClearMessage()
         } else {
           // 不是朋友弹出添加朋友的提示
-          addFriendDialog.value = true
           friendRequestData.value = {
             userId: userStore.user_info.id,
             friendId: friend.id,
             remark: '',
             requestStatus: website.requestStatus.PENDING,
-            seqNum: Date.now(),
+            seqNum: String(Date.now()),
           }
+          addFriendDialog.value = true
         }
       })
     }
   }
 
   function handleAddFriend() {
-    emit('addFriend', friendRequestData)
+    emit('addFriend', friendRequestData.value)
     addFriendDialog.value = false
   }
 
   function onSelectChat(e: any) {
-    console.log(e)
+    // console.log(e)
     const chatSession = e.id
     emit('selectFriend', chatSession)
   }

@@ -1,34 +1,6 @@
 import website from '@/config/website'
 import Dexie, { Table } from 'dexie'
-
-export interface ChatSession {
-  id: string
-  userId: number
-  friendId: number
-  username: string
-  phone: string
-  avatar: string
-  title: string
-  lastChatTime: number
-}
-
-export interface ChatMessage {
-  id: string
-  senderId: string
-  receiverId: string
-  content: string
-  contentType: number
-  createTime: string
-  inversion: boolean
-  error: string
-  loading: boolean
-  ack: boolean
-}
-
-export interface ChatConfig {
-  id: string
-  serverStubId: string
-}
+import {ChatSession, ChatMessage, ChatConfig} from '#/types/db'
 
 export class MySubClassedDexie extends Dexie {
   // 'ChatList' is added by dexie when declaring the stores()

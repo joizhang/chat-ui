@@ -80,11 +80,11 @@
         style="z-index: 1"
       ></v-alert>
       <div id="scrollRef" ref="scrollRef" class="h-100 overflow-hidden overflow-y-auto" style="position: relative">
-        <v-container v-if="!chatMessages.length" class="d-flex justify-center align-center text-h5 h-100">
+        <v-container v-if="!chatMessages!.length" class="d-flex justify-center align-center text-h5 h-100">
           Content
         </v-container>
         <v-container v-else style="position: absolute">
-          <chat-message v-for="(item, index) of chatMessages" :key="index" :message="item" />
+          <chat-room-message v-for="(item, index) of chatMessages" :key="index" :message="item" />
         </v-container>
       </div>
     </v-main>
@@ -96,22 +96,20 @@
   import type { Ref } from 'vue'
   import { computed, onMounted, ref } from 'vue'
   import { DateTime } from 'luxon'
-  // import { useRoute } from 'vue-router'
-  // import { storeToRefs } from 'pinia'
-  import ChatMessage from '../ChatMessage/index.vue'
   import { useScroll } from './hooks/useScroll'
-  // import { useChat } from './hooks/useChat'
   import { useUserStore } from '@/store/user'
+  import ChatRoomMessage from '@/components/ChatRoomMessage/index.vue'
+  import { ChatMessage } from '#/db'
 
   const props = defineProps({
     connected: Boolean,
     currentUser: Object,
-    chatMessages: Array,
+    chatMessages: Array<ChatMessage>,
   })
 
   const emit = defineEmits(['popupMessage', 'sendMessage'])
 
-  const active = computed(() => Object.keys(props.currentUser).length !== 0)
+  const active = computed(() => !!props.currentUser)
   // const route = useRoute()
   const userStore = useUserStore()
   // const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
@@ -137,15 +135,18 @@
     }
 
     const now = DateTime.now()
-    const messageToSend = {
+    const messageToSend: ChatMessage = {
+      id: '',
       senderId: userStore.user_info.id,
       receiverId: props.currentUser.friendId,
+      seqNum: String(Date.now()),
       content: message,
       contentType: 2,
       createTime: now.toFormat('yyyy-MM-dd HH:mm:ss'),
-      error: '',
       inversion: true,
-      loading: false,
+      error: '',
+      loading: true,
+      ack: false,
     }
     emit('sendMessage', messageToSend)
     scrollToBottom()
