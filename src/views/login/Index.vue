@@ -1,7 +1,7 @@
 <template>
   <v-container>
-    <v-row>
-      <v-col cols="6" offset="3">
+    <v-row justify="center">
+      <v-col cols="6" sm="9">
         <v-app-bar-title class="mg-tittle">
           <v-avatar color="#cb7760">
             <v-icon icon="mdi-vector-bezier" size="x-large" />
@@ -10,8 +10,8 @@
         </v-app-bar-title>
       </v-col>
     </v-row>
-    <v-row>
-      <v-col cols="6" offset="3">
+    <v-row justify="center">
+      <v-col cols="6" sm="9">
         <v-card>
           <v-container class="fill-height">
             <v-row>

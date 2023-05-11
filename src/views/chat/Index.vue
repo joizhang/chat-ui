@@ -1,7 +1,7 @@
 <template>
   <v-container class="h-100">
-    <v-row class="h-100">
-      <v-col cols="8" offset="2" class="h-100">
+    <v-row class="h-100" justify="center">
+      <v-col cols="8" sm="12" class="h-100">
         <v-card class="h-100">
           <v-container class="h-100" style="padding: 0">
             <v-row no-gutters class="h-100">
