@@ -124,7 +124,7 @@
             message.contentType = 2
             message.content = "We are friends now, let's start chatting."
           }
-          
+
           const chatMapKey = `${message.senderId}_${message.receiverId}`
           if (!chatMap.value.has(chatMapKey)) {
             await storeChatSessions([message])

@@ -94,7 +94,7 @@
 
 <script lang="ts" setup>
   import type { Ref } from 'vue'
-  import { computed, onMounted, ref } from 'vue'
+  import { computed, onMounted, ref, watch } from 'vue'
   import { DateTime } from 'luxon'
   import { useScroll } from './hooks/useScroll'
   import { useUserStore } from '@/store/user'
@@ -115,9 +115,14 @@
   // const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
   const { scrollRef, scrollToBottom } = useScroll()
 
+  const chatMessageLength = computed(() => props.chatMessages!.length)
   const inputMessage = ref<string>('')
   // const loading = ref<boolean>(false)
   const inputRef = ref<Ref | null>(null)
+
+  watch(chatMessageLength, () => {
+    scrollToBottom()
+  })
 
   function handleSubmit() {
     onConversation()
@@ -149,7 +154,7 @@
       ack: false,
     }
     emit('sendMessage', messageToSend)
-    scrollToBottom()
+    // scrollToBottom()
     inputMessage.value = ''
   }
 
@@ -162,7 +167,7 @@
 
   onMounted(() => {
     // console.log(Object.keys(props.currentUser).length === 0)
-    scrollToBottom()
+    // scrollToBottom()
     if (inputRef.value) inputRef.value?.focus()
   })
 </script>
