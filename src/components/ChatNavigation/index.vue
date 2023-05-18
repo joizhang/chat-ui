@@ -1,40 +1,86 @@
 <template>
-  <v-layout class="h-100">
-    <v-app-bar :flat="true" style="background-color: #f0f2f5">
-      <v-container>
-        <v-row>
-          <v-col cols="2">
-            <v-icon icon="mdi-account-circle" :size="46" color="#dfe5e7"></v-icon>
-          </v-col>
-          <v-col cols="2" offset="6" class="text-center">
-            <v-btn icon="mdi-message-text" color="#54656f"></v-btn>
-          </v-col>
-          <v-col cols="2" class="text-center" color="#54656f">
-            <v-menu close-on-content-click>
-              <template v-slot:activator="{ props }">
-                <v-btn icon="mdi-dots-vertical" v-bind="props"></v-btn>
-              </template>
-              <v-list width="200">
-                <v-list-item link>
-                  <v-list-item-title>New group</v-list-item-title>
-                </v-list-item>
-                <v-list-item link>
-                  <v-list-item-title>Select chats</v-list-item-title>
-                </v-list-item>
-                <v-list-item link>
-                  <v-list-item-title>Settings</v-list-item-title>
-                </v-list-item>
-                <v-list-item link @click="logOutDialog = true">
-                  <v-list-item-title>Log out</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-app-bar>
+  <v-layout full-height>
+    <v-navigation-drawer class="w-100" :model-value="navModelValue === 1">
+      <v-sheet style="background-color: #b35c44">
+        <v-container class="pt-10">
+          <v-row>
+            <v-col cols="auto">
+              <v-btn icon="mdi-keyboard-backspace" color="white" variant="text" @click.stop="navModelValue = 0"></v-btn>
+            </v-col>
+            <v-col cols="auto" class="text-center text-white text-h6" style="line-height: 3rem"> New chat </v-col>
+          </v-row>
+        </v-container>
+      </v-sheet>
 
-    <v-navigation-drawer class="w-100">
+      <v-text-field
+        v-model="searchContactsText"
+        density="compact"
+        variant="outlined"
+        label="Search contacts"
+        single-line
+        hide-details
+        clearable
+        class="pd-10-15"
+        @click:append-inner="onSearchContacts"
+        @click:clear="onClearSearchContactsMessage"
+        @keypress="handleSearchContactsEnter"
+      >
+        <template v-slot:append-inner>
+          <v-fade-transition leave-absolute>
+            <v-progress-circular v-if="searchLoading" indeterminate :size="22"></v-progress-circular>
+            <v-icon v-else icon="mdi-magnify"></v-icon>
+          </v-fade-transition>
+        </template>
+      </v-text-field>
+
+      <v-list>
+        <v-list-item link active-color="primary" class="pa-3" @click="onSelectSearchedFriend(item)">
+          <template v-slot:prepend>
+            <v-avatar color="grey-lighten-1">
+              <v-icon icon="mdi-account-group" :size="60" color="#dfe5e7"></v-icon>
+            </v-avatar>
+          </template>
+          <v-list-item-title>New group</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
+    <!-- 搜索和会话列表Drawer -->
+    <v-navigation-drawer class="w-100" :model-value="navModelValue === 0">
+      <v-sheet style="background-color: #f0f2f5">
+        <v-container class="pa-2">
+          <v-row>
+            <v-col cols="auto" class="me-auto">
+              <v-icon icon="mdi-account-circle" :size="46" color="#dfe5e7"></v-icon>
+            </v-col>
+            <v-col cols="auto" class="text-center">
+              <v-btn icon="mdi-message-text" color="#54656f" variant="text" @click.stop="navModelValue = 1"></v-btn>
+            </v-col>
+            <v-col cols="auto" class="text-center" color="#54656f">
+              <v-menu close-on-content-click>
+                <template v-slot:activator="{ props }">
+                  <v-btn icon="mdi-dots-vertical" v-bind="props" variant="text"></v-btn>
+                </template>
+                <v-list width="200">
+                  <v-list-item link>
+                    <v-list-item-title>New group</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item link>
+                    <v-list-item-title>Select chats</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item link>
+                    <v-list-item-title>Settings</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item link @click="logOutDialog = true">
+                    <v-list-item-title>Log out</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-sheet>
+
       <v-text-field
         v-model="searchText"
         density="compact"
@@ -56,6 +102,7 @@
         </template>
       </v-text-field>
       <v-divider></v-divider>
+
       <!-- 搜索列表 -->
       <v-list v-if="showSearch">
         <v-sheet v-if="!searchedFriends.length">
@@ -147,6 +194,10 @@
   const authStore = useAuthStore()
   const userStore = useUserStore()
 
+  const navModelValue = ref(0)
+
+  const searchContactsText = ref('')
+
   const searchPromptText = ref('No chats, contacts or messages found')
   const searchedFriends = ref([])
   const page = ref({
@@ -162,6 +213,8 @@
   const logOutDialog = ref(false)
   const addFriendDialog = ref(false)
   const friendRequestData = ref<FriendRequest>()
+
+  const newChatDrawer = ref(false)
 
   function handleLogOut() {
     logout()

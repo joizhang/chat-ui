@@ -1,16 +1,16 @@
 <template>
-  <v-layout v-if="active" class="h-100">
+  <v-layout v-if="active" full-height>
     <v-app-bar flat style="background-color: #f0f2f5">
       <v-container>
         <v-row>
-          <v-col cols="2">
+          <v-col cols="auto" class="me-auto">
             <v-icon icon="mdi-account-circle" :size="46" color="#dfe5e7"></v-icon>
             {{ currentUser.username }}
           </v-col>
-          <v-col cols="1" offset="8" class="text-center">
+          <v-col cols="auto" class="text-center">
             <v-btn icon="mdi-magnify" color="#54656f"></v-btn>
           </v-col>
-          <v-col cols="1" class="text-center" color="#54656f">
+          <v-col cols="auto" class="text-center" color="#54656f">
             <v-btn icon="mdi-dots-vertical" id="chat-room-menu-activator"></v-btn>
             <v-menu activator="#chat-room-menu-activator">
               <v-list width="200">
@@ -42,13 +42,13 @@
     <v-app-bar flat location="bottom" style="background-color: #f0f2f5">
       <v-container>
         <v-row>
-          <v-col cols="1" class="text-center">
+          <v-col cols="auto" class="text-center">
             <v-btn icon="mdi-emoticon-happy-outline" color="#54656f"></v-btn>
           </v-col>
-          <v-col cols="1" class="text-center">
+          <v-col cols="auto" class="text-center me-auto">
             <v-btn icon="mdi-attachment" color="#54656f"></v-btn>
           </v-col>
-          <v-col cols="9">
+          <v-col cols="8">
             <v-text-field
               ref="inputRef"
               v-model="inputMessage"
@@ -62,7 +62,7 @@
               @keypress="handleEnter"
             ></v-text-field>
           </v-col>
-          <v-col cols="1" class="text-center">
+          <v-col cols="auto" class="text-center">
             <v-btn icon="mdi-microphone" color="#54656f"></v-btn>
           </v-col>
         </v-row>

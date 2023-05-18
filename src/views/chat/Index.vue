@@ -1,5 +1,12 @@
 <template>
-  <v-container class="h-100">
+  <v-sheet v-if="dataLoading" class="w-100 h-100 d-flex flex-column" style="background-color: #f0f2f5">
+    <div class="ma-auto text-center w-25">
+      <v-icon icon="mdi-vector-bezier" size="60" class="mb-6 text-grey" />
+      <v-progress-linear indeterminate color="#d4a27f"></v-progress-linear>
+      <p class="mt-3">VectorLinger</p>
+    </div>
+  </v-sheet>
+  <v-container v-else class="h-100">
     <v-row class="h-100" justify="center">
       <v-col cols="8" sm="12" class="h-100">
         <v-card class="h-100">
@@ -413,7 +420,9 @@
     await storeMessages(messageHistory)
     // 更新用户存根ID
     await updateUserServerStubId(messageHistory)
-    dataLoading.value = false
+    setTimeout(() => {
+      dataLoading.value = false
+    }, 1000)
   })
 
   onUnmounted(() => {
@@ -421,7 +430,7 @@
       socket.close()
     }
     if (currentUser.value) {
-      currentUser.value = {}
+      currentUser.value = undefined
     }
   })
 </script>
