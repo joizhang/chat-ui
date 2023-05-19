@@ -1,60 +1,33 @@
 <template>
   <v-layout full-height>
-    <v-navigation-drawer class="w-100" :model-value="navModelValue === 1">
-      <v-sheet style="background-color: #b35c44">
-        <v-container class="pt-10">
-          <v-row>
-            <v-col cols="auto">
-              <v-btn icon="mdi-keyboard-backspace" color="white" variant="text" @click.stop="navModelValue = 0"></v-btn>
-            </v-col>
-            <v-col cols="auto" class="text-center text-white text-h6" style="line-height: 3rem"> New chat </v-col>
-          </v-row>
-        </v-container>
-      </v-sheet>
+    <chat-nav-new-chat
+      :nav-model-value="navModelValue"
+      @change-model-value="handleChangeModelValue"
+    ></chat-nav-new-chat>
 
-      <v-text-field
-        v-model="searchContactsText"
-        density="compact"
-        variant="outlined"
-        label="Search contacts"
-        single-line
-        hide-details
-        clearable
-        class="pd-10-15"
-        @click:append-inner="onSearchContacts"
-        @click:clear="onClearSearchContactsMessage"
-        @keypress="handleSearchContactsEnter"
-      >
-        <template v-slot:append-inner>
-          <v-fade-transition leave-absolute>
-            <v-progress-circular v-if="searchLoading" indeterminate :size="22"></v-progress-circular>
-            <v-icon v-else icon="mdi-magnify"></v-icon>
-          </v-fade-transition>
-        </template>
-      </v-text-field>
-
-      <v-list>
-        <v-list-item link active-color="primary" class="pa-3" @click="onSelectSearchedFriend(item)">
-          <template v-slot:prepend>
-            <v-avatar color="grey-lighten-1">
-              <v-icon icon="mdi-account-group" :size="60" color="#dfe5e7"></v-icon>
-            </v-avatar>
-          </template>
-          <v-list-item-title>New group</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
+    <chat-nav-settings
+      :nav-model-value="navModelValue"
+      @change-model-value="handleChangeModelValue"
+    ></chat-nav-settings>
 
     <!-- 搜索和会话列表Drawer -->
-    <v-navigation-drawer class="w-100" :model-value="navModelValue === 0">
+    <v-navigation-drawer class="w-100" :model-value="navModelValue === website.navType.CHAT_NAV">
       <v-sheet style="background-color: #f0f2f5">
         <v-container class="pa-2">
           <v-row>
             <v-col cols="auto" class="me-auto">
-              <v-icon icon="mdi-account-circle" :size="46" color="#dfe5e7"></v-icon>
+              <v-avatar color="white">
+                <v-icon icon="mdi-account-circle" :size="40" color="#dfe5e7"></v-icon>
+              </v-avatar>
+              <!-- <v-icon icon="mdi-account-circle" :size="46" color="#dfe5e7"></v-icon> -->
             </v-col>
             <v-col cols="auto" class="text-center">
-              <v-btn icon="mdi-message-text" color="#54656f" variant="text" @click.stop="navModelValue = 1"></v-btn>
+              <v-btn
+                icon="mdi-message-text"
+                color="#54656f"
+                variant="text"
+                @click.stop="navModelValue = website.navType.CHAT_NAV_NEW_CHAT"
+              ></v-btn>
             </v-col>
             <v-col cols="auto" class="text-center" color="#54656f">
               <v-menu close-on-content-click>
@@ -68,7 +41,7 @@
                   <v-list-item link>
                     <v-list-item-title>Select chats</v-list-item-title>
                   </v-list-item>
-                  <v-list-item link>
+                  <v-list-item link @click="navModelValue = website.navType.CHAT_NAV_SETTINGS">
                     <v-list-item-title>Settings</v-list-item-title>
                   </v-list-item>
                   <v-list-item link @click="logOutDialog = true">
@@ -179,6 +152,8 @@
   import { useAuthStore } from '@/store/auth'
   import { useUserStore } from '@/store/user'
   import { ChatSession, FriendRequest } from '#/db'
+  import ChatNavNewChat from '@/components/ChatNavNewChat/index.vue'
+  import ChatNavSettings from '@/components/ChatNavSettings/index.vue'
 
   const props = defineProps({
     chatMap: Map<String, ChatSession>,
@@ -196,8 +171,6 @@
 
   const navModelValue = ref(0)
 
-  const searchContactsText = ref('')
-
   const searchPromptText = ref('No chats, contacts or messages found')
   const searchedFriends = ref([])
   const page = ref({
@@ -214,7 +187,9 @@
   const addFriendDialog = ref(false)
   const friendRequestData = ref<FriendRequest>()
 
-  const newChatDrawer = ref(false)
+  function handleChangeModelValue(modelValue: number) {
+    navModelValue.value = modelValue
+  }
 
   function handleLogOut() {
     logout()
