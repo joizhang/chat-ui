@@ -7,18 +7,18 @@
     </div>
   </v-sheet>
   <v-container v-else class="h-100">
-    <v-row class="h-100" justify="center">
-      <v-col cols="8" sm="12" class="h-100">
+    <v-row class="h-100 ma-0">
+      <v-col cols="8" sm="12" class="h-100 pa-0">
         <v-card class="h-100">
           <v-container class="h-100" style="padding: 0">
             <v-row no-gutters class="h-100">
               <v-col cols="4" class="h-100">
-                <chat-navigation
+                <chat-nav
                   :chat-map="chatMap"
                   @popup-message="handlePopupMessage"
                   @add-friend="handleAddFriend"
                   @select-friend="handleSelectFriend"
-                ></chat-navigation>
+                ></chat-nav>
               </v-col>
               <v-col cols="8" class="h-100 overflow-hidden">
                 <chat-room
@@ -55,7 +55,7 @@
   import { useUserStore } from '@/store/user'
   import { db } from '@/utils/db'
   import website from '@/config/website'
-  import ChatNavigation from '@/components/ChatNavigation/index.vue'
+  import ChatNav from '@/components/ChatNav/index.vue'
   import ChatRoom from '@/components/ChatRoom/index.vue'
   import { ChatMessage, ChatSession, FriendRequest } from '#/db'
 
