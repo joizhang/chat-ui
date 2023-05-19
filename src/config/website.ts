@@ -19,4 +19,11 @@ export default {
     PENDING: '1',
     ACCEPTED: '2',
   },
+  navType: {
+    CHAT_NAV: 0,
+    CHAT_NAV_NEW_CHAT: 1,
+    CHAT_NAV_NEW_CHAT_NEW_GROUP: 11,
+    CHAT_NAV_SETTINGS: 2,
+    CHAT_NAV_PROFILE: 21,
+  }
 }
