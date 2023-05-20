@@ -351,7 +351,7 @@
     const userId = userStore.user_info.id
     currentUser.value = chatSession
     try {
-      console.log(chatSession, prepend)
+      // console.log(chatSession, prepend)
       if (!chatMap.value.has(chatSession.id)) {
         chatMap.value.set(chatSession.id, chatSession)
         const chatSessionToStore = { ...chatSession, active: false }
@@ -418,6 +418,14 @@
   }
 
   function handleCloseChat() {
+    // const userId = userStore.user_info.id
+    if (currentUser.value) {
+      const chatSession = chatMap.value.get(currentUser.value.id)
+      if (chatSession) {
+        chatSession.active = false
+      }
+    }
+    
     chatMessages.value = []
     currentUser.value = undefined
   }
