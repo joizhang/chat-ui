@@ -6,7 +6,8 @@
       <p class="mt-3">VectorLinger</p>
     </div>
   </v-sheet>
-  <v-container v-else class="h-100">
+
+  <v-container v-else class="h-100" style="min-height: 512px">
     <v-row class="h-100 ma-0">
       <v-col cols="8" sm="12" class="h-100 pa-0">
         <v-card class="h-100">
@@ -25,8 +26,9 @@
                   :connected="connected"
                   :current-user="currentUser"
                   :chat-messages="chatMessages"
-                  @send-message="handleSendMessage"
                   @popup-message="handlePopupMessage"
+                  @send-message="handleSendMessage"
+                  @close-chat="handleCloseChat"
                 ></chat-room>
               </v-col>
             </v-row>
@@ -248,6 +250,7 @@
               avatar: sender.avatar,
               title: title,
               lastChatTime: message.createTime,
+              active: false,
             }
             chatSessions.push(chatSession)
             continue
@@ -344,12 +347,22 @@
     chatSnackbar.value = true
   }
 
-  async function handleSelectFriend(chatSession: any, prepend: boolean = false) {
+  async function handleSelectFriend(chatSession: ChatSession, prepend: boolean) {
     const userId = userStore.user_info.id
     currentUser.value = chatSession
     try {
-      if (prepend) {
-        // chatMap.value.unshift(chatSession)
+      console.log(chatSession, prepend)
+      if (!chatMap.value.has(chatSession.id)) {
+        chatMap.value.set(chatSession.id, chatSession)
+        const chatSessionToStore = { ...chatSession, active: false }
+        db.chatSession.add(chatSessionToStore)
+      } else {
+        if (prepend) {
+          chatMap.value.delete(chatSession.id)
+          chatMap.value.set(chatSession.id, chatSession)
+        } else {
+          chatMap.value.set(chatSession.id, chatSession)
+        }
       }
 
       // 更新消息列表
@@ -402,6 +415,11 @@
     inflightMessages.value.set(messageKey, messageToSend)
     socket.send(JSON.stringify(message))
     chatMessages.value.push(messageToSend)
+  }
+
+  function handleCloseChat() {
+    chatMessages.value = []
+    currentUser.value = undefined
   }
 
   onMounted(async () => {

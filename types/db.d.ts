@@ -1,12 +1,13 @@
 export interface ChatSession {
   id: string
-  userId: number
-  friendId: number
+  userId: string
+  friendId: string
   username: string
   phone: string
   avatar: string
   title: string
   lastChatTime: string
+  active: boolean
 }
 
 export interface ChatMessage {

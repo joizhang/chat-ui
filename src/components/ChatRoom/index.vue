@@ -5,7 +5,7 @@
         <v-row>
           <v-col cols="auto" class="me-auto">
             <v-icon icon="mdi-account-circle" :size="46" color="#dfe5e7"></v-icon>
-            {{ currentUser.username }}
+            {{ currentUser!.username }}
           </v-col>
           <v-col cols="auto" class="text-center">
             <v-btn icon="mdi-magnify" color="#54656f"></v-btn>
@@ -21,7 +21,7 @@
                   <v-list-item-title>Select messages</v-list-item-title>
                 </v-list-item>
                 <v-list-item link>
-                  <v-list-item-title>Close chat</v-list-item-title>
+                  <v-list-item-title @click="onCloseChat">Close chat</v-list-item-title>
                 </v-list-item>
                 <v-list-item link>
                   <v-list-item-title>Disappearing message</v-list-item-title>
@@ -89,6 +89,8 @@
       </div>
     </v-main>
   </v-layout>
+
+  <!-- 未选中用户展示 -->
   <v-layout v-else class="h-100" style="background-color: #f0f2f5"> </v-layout>
 </template>
 
@@ -107,7 +109,7 @@
     chatMessages: Array<ChatMessage>,
   })
 
-  const emit = defineEmits(['popupMessage', 'sendMessage'])
+  const emit = defineEmits(['popupMessage', 'sendMessage', 'closeChat'])
 
   const active = computed(() => !!props.currentUser)
   // const route = useRoute()
@@ -123,6 +125,10 @@
   watch(chatMessageLength, () => {
     scrollToBottom()
   })
+
+  function onCloseChat() {
+    emit('closeChat')
+  }
 
   function handleSubmit() {
     onConversation()
