@@ -84,7 +84,7 @@
           Content
         </v-container>
         <v-container v-else style="position: absolute">
-          <chat-room-message v-for="(item, index) of chatMessages" :key="index" :message="item" />
+          <chat-room-message v-for="(item, index) of chatMessages" :key="index" :message="item" @popup-message="handlePopupMessage" />
         </v-container>
       </div>
     </v-main>
@@ -169,6 +169,10 @@
       event.preventDefault()
       handleSubmit()
     }
+  }
+
+  function handlePopupMessage(message: string) {
+    emit('popupMessage', message)
   }
 
   onMounted(() => {
