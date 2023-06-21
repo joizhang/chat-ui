@@ -3,7 +3,7 @@ export default {
   description: 'spring cloud chat',
   db: {
     name: 'model-storage',
-    version: 6,
+    version: 9,
   },
   wsBaseUrl: `${import.meta.env.VITE_APP_WS_BASE_URL}chat/ws/info`,
   contentType: {
@@ -14,6 +14,7 @@ export default {
     AUDIO: 5,
     FRIEND_REQ: 5,
     ACK: 6,
+    TOOLTIP: 7,
   },
   requestStatus: {
     PENDING: '1',

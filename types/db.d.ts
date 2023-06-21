@@ -1,5 +1,5 @@
 export interface ChatSession {
-  id: string
+  id: string // senderId + receiverId or friendId + userId
   userId: string
   friendId: string
   username: string
@@ -11,7 +11,7 @@ export interface ChatSession {
 }
 
 export interface ChatMessage {
-  id: string
+  id: string // messageId
   senderId: string
   receiverId: string
   seqNum: string
@@ -25,14 +25,24 @@ export interface ChatMessage {
 }
 
 export interface ChatConfig {
-  id: string
+  id: string // userId
   serverStubId: string
 }
 
+export interface ChatFriend {
+  id: string // userId + friendId
+  userId: string
+  friendId: string
+  username: string
+  phone: string
+  avatar: string
+  createTime: string
+}
+
 export interface FriendRequest {
-    userId: string
-    friendId: string
-    remark: string
-    requestStatus: string
-    seqNum: string
+  userId: string
+  friendId: string
+  remark: string
+  requestStatus: string
+  seqNum: string
 }
