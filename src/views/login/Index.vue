@@ -38,7 +38,10 @@
                               <v-text-field
                                 v-model="passwdLoginForm.password"
                                 label="PASSWORD"
+                                :append-inner-icon="passwordShow ? 'mdi-eye' : 'mdi-eye-off'"
+                                :type="passwordShow ? 'text' : 'password'"
                                 :rules="passwordRules"
+                                @click:append-inner="passwordShow = !passwordShow"
                               ></v-text-field>
                               <v-container class="ma-0 pa-0">
                                 <v-row>
@@ -169,6 +172,7 @@
     code: '',
     randomStr: '',
   })
+  const passwordShow = ref(false)
 
   const code = ref({
     src: 'api/code',
