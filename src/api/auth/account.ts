@@ -10,7 +10,7 @@ const smsLoginClient = 'app:app'
 /**
  * 密码登陆
  */
-export function loginByPassword<T = any>(
+export function loginByPassword(
   username: string,
   password: string,
   code: string,
@@ -22,7 +22,7 @@ export function loginByPassword<T = any>(
   const basicAuth = 'Basic ' + window.btoa(formLoginClient)
   const settingStore = useSettingStore()
   settingStore.updateSetting({basicAuth})
-  return post<T>({
+  return post({
     url: '/auth/oauth2/token',
     headers: {
       isToken: false,
@@ -38,12 +38,12 @@ export function loginByPassword<T = any>(
 /**
  * 验证码登陆
  */
-export function loginByMobile<T = any>(phone: string, code: string, signal?: GenericAbortSignal) {
+export function loginByMobile(phone: string, code: string, signal?: GenericAbortSignal) {
   const grant_type = 'app'
   const basicAuth = 'Basic ' + window.btoa(smsLoginClient)
   const settingStore = useSettingStore()
   settingStore.updateSetting({basicAuth})
-  return post<T>({
+  return post({
     url: '/auth/oauth2/token',
     headers: {
       isToken: false,
@@ -58,12 +58,12 @@ export function loginByMobile<T = any>(phone: string, code: string, signal?: Gen
  * 
  * 刷新token
  */
-export function refreshToken<T = any>(refresh_token: string) {
+export function refreshToken(refresh_token: string) {
   const grant_type = 'refresh_token'
   // 获取当前选中的 basic 认证信息
   const settingStore = useSettingStore()
   const basicAuth = settingStore.basicAuth
-  return post<T>({
+  return post({
     url: '/auth/oauth2/token',
     headers: {
       isToken: false,
@@ -73,10 +73,10 @@ export function refreshToken<T = any>(refresh_token: string) {
   })
 }
 
-export function checkToken<T = any>(token: string) {
+export function checkToken(token: string) {
   const settingStore = useSettingStore()
   const basicAuth = settingStore.basicAuth
-  return get<T>({
+  return get({
     url: '/auth/token/check_token',
     headers: {
       isToken: false,
@@ -89,8 +89,8 @@ export function checkToken<T = any>(token: string) {
 /**
  * 注册用户
  */
-export function registerUser<T = any>(registeredUser: any) {
-  return post<T>({
+export function registerUser(registeredUser: any) {
+  return post({
     url: '/chat/svc/register/customer',
     data: registeredUser
   })
@@ -99,8 +99,8 @@ export function registerUser<T = any>(registeredUser: any) {
 /**
  * 用户信息
  */
-export function getUserInfo<T = any>() {
-  return get<T>({
+export function getUserInfo() {
+  return get({
     url: '/chat/svc/user/info',
     method: 'get'
   })
@@ -109,8 +109,8 @@ export function getUserInfo<T = any>() {
 /**
  * 注销
  */
-export function logout<T = any>() {
-  return del<T>({
+export function logout() {
+  return del({
     url: '/auth/token/logout',
   })
 }

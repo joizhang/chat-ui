@@ -1,24 +1,7 @@
-import type { AxiosProgressEvent, AxiosResponse, GenericAbortSignal } from 'axios'
+import type { HttpOption, Result } from '#/axios'
 import request from './axios'
-// import { useAuthStore } from '@/store/auth'
 
-export interface HttpOption {
-  url: string
-  method?: string
-  headers?: any
-  params?: any
-  data?: any
-  onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void
-  signal?: GenericAbortSignal
-}
-
-export interface Response<T = any> {
-  data: T
-  message: string | null
-  status: string
-}
-
-function http<T = any>({
+function http({
   url,
   method,
   headers,
@@ -26,7 +9,7 @@ function http<T = any>({
   data,
   onDownloadProgress,
   signal,
-}: HttpOption): Promise<AxiosResponse<T, T>> {
+}: HttpOption): Promise<Result> {
   method = method || 'GET'
   data = Object.assign(typeof data === 'function' ? data() : data ?? {}, {})
   if (method === 'POST') {
@@ -40,15 +23,15 @@ function http<T = any>({
   }
 }
 
-export function get<T = any>({
+export function get({
   url,
   method = 'GET',
   headers,
   params,
   onDownloadProgress,
   signal,
-}: HttpOption): Promise<AxiosResponse<T, T>> {
-  return http<T>({
+}: HttpOption): Promise<Result> {
+  return http({
     url,
     method,
     headers,
@@ -58,7 +41,7 @@ export function get<T = any>({
   })
 }
 
-export function post<T = any>({
+export function post({
   url,
   method = 'POST',
   headers,
@@ -66,8 +49,8 @@ export function post<T = any>({
   data,
   onDownloadProgress,
   signal,
-}: HttpOption): Promise<AxiosResponse<T, T>> {
-  return http<T>({
+}: HttpOption): Promise<Result> {
+  return http({
     url,
     method,
     headers,
@@ -78,15 +61,15 @@ export function post<T = any>({
   })
 }
 
-export function del<T = any>({
+export function del({
   url,
   method = 'DELETE',
   headers,
   params,
   onDownloadProgress,
   signal,
-}: HttpOption): Promise<AxiosResponse<T, T>> {
-  return http<T>({
+}: HttpOption): Promise<Result> {
+  return http({
     url,
     method,
     headers,
@@ -96,7 +79,7 @@ export function del<T = any>({
   })
 }
 
-export function put<T = any>({
+export function put({
   url,
   method = 'PUT',
   headers,
@@ -104,8 +87,8 @@ export function put<T = any>({
   data,
   onDownloadProgress,
   signal,
-}: HttpOption): Promise<AxiosResponse<T, T>> {
-  return http<T>({
+}: HttpOption): Promise<Result> {
+  return http({
     url,
     method,
     headers,
