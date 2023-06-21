@@ -1,5 +1,4 @@
 <template>
-  <!-- 搜索和会话列表Drawer -->
   <v-navigation-drawer class="w-100" :model-value="navModelValue === website.navType.CHAT_NAV">
     <v-sheet style="background-color: #f0f2f5">
       <v-container class="pa-2">
@@ -89,7 +88,7 @@
         <v-list-item-title>{{ item.username }}</v-list-item-title>
         <v-list-item-subtitle>{{ item.phone }}</v-list-item-subtitle>
       </v-list-item>
-    </v-list> 
+    </v-list>
 
     <!-- 会话列表 -->
     <v-list v-else @click:select="onSelectChat" select-strategy="single-leaf">

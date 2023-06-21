@@ -1,15 +1,20 @@
 <template>
   <v-layout full-height>
+    <!-- 新建群聊Drawer -->
+
+    <!-- 新建会话和群聊Drawer -->
     <chat-nav-new-chat
       :nav-model-value="navModelValue"
       @change-model-value="handleChangeModelValue"
     ></chat-nav-new-chat>
 
+    <!-- 设置Drawer -->
     <chat-nav-settings
       :nav-model-value="navModelValue"
       @change-model-value="handleChangeModelValue"
     ></chat-nav-settings>
 
+    <!-- 搜索和会话列表Drawer -->
     <chat-nav-main
       :chat-map="chatMap"
       :nav-model-value="navModelValue"
