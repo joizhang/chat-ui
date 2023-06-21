@@ -138,7 +138,8 @@
   import { DateTime } from 'luxon'
   import website from '@/config/website'
   import { logout } from '@/api/auth/account'
-  import { searchFriends, checkFriend } from '@/api/chat/friend'
+  import { searchCustomer } from '@/api/chat/customer'
+  import { checkFriend } from '@/api/chat/friend'
   import { ChatSession, FriendRequest } from '#/db'
 
   const props = defineProps({
@@ -221,7 +222,7 @@
       size: page.value.pageSize,
       username: searchText.value,
     }
-    searchFriends(params)
+    searchCustomer(params)
       .then((res: any) => {
         if (res.data.records.length === 0) {
           searchPromptText.value = 'No chats, contacts or messages found'
