@@ -50,7 +50,7 @@
   import { onMounted, onUnmounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { DateTime } from 'luxon'
-  import { checkToken, refreshToken } from '@/api/auth/account'
+  import { checkToken, refreshToken, retrieveCustomerInfo } from '@/api/auth/account'
   import { addFriendRequest, getCustomersByFriends } from '@/api/chat/friend'
   import { getMessageHistory } from '@/api/message/one'
   import { useAuthStore } from '@/store/auth'
@@ -90,7 +90,7 @@
    */
   async function checkTokenExpire() {
     try {
-      const checkRes: any = await checkToken(authStore.accessToken ?? '')
+      const checkRes: any = await checkToken(authStore.access_token ?? '')
       // console.log(res)
       const expire = checkRes && checkRes.exp
       if (expire) {
@@ -98,16 +98,26 @@
         console.log('当前token过期时间', expiredPeriod, '毫秒')
         // 小于半小时自动续约
         if (expiredPeriod < halfAnHour) {
-          const refreshRes: any = await refreshToken(userStore.refresh_token)
-          authStore.setAccessToken(refreshRes.access_token)
-          userStore.updateUserInfo(refreshRes)
+          const refreshRes: any = await refreshToken(authStore.refresh_token)
+          authStore.updateAuthInfo(refreshRes)
         }
       }
     } catch (err) {
       // console.log(err)
-      authStore.removeAccessToken()
-      userStore.removeUserInfo()
+      authStore.removeAuthInfo()
+      // userStore.removeUserInfo()
       router.push('/login')
+    }
+  }
+
+  async function getUserInfo() {
+    try {
+      const res = await retrieveCustomerInfo()
+      // console.log(res)
+      userStore.updateUserInfo(res.data.chatCustomer)
+    } catch (err: any) {
+      errorMsg.value = err.message
+      chatSnackbar.value = true
     }
   }
 
@@ -117,9 +127,9 @@
    * @return {void}
    */
   async function initWebsocket() {
-    if (!authStore.accessToken) return
+    if (!authStore.access_token) return
     if (socket) return
-    socket = new WebSocket(website.wsBaseUrl + '?access_token=' + authStore.accessToken)
+    socket = new WebSocket(website.wsBaseUrl + '?access_token=' + authStore.access_token)
     // Connection opened
     socket.onopen = () => {
       connected.value = true
@@ -224,7 +234,7 @@
   async function syncFriends() {
     if (!socket) return
     try {
-      const userId = userStore.user_info.id
+      const userId = userStore.id
       const chatFriendsFromDB = await db.chatFriend.where({ userId: userId }).toArray()
       // 按照上次聊天时间升序排序
       chatFriendsFromDB.sort((a, b) => {
@@ -269,7 +279,7 @@
   async function syncMessages(): Promise<Array<any>> {
     if (!socket) return []
     try {
-      const userId = userStore.user_info.id
+      const userId = userStore.id
       const chatConfig = await db.chatConfig.get({ id: userId })
       const serverStubId = chatConfig ? chatConfig.serverStubId : '0'
       const res: any = await getMessageHistory(serverStubId)
@@ -289,7 +299,7 @@
    */
   async function storeChatSessions(messageHistory: Array<any>) {
     if (messageHistory.length === 0) return
-    const userId = userStore.user_info.id
+    const userId = userStore.id
     const messageMap = new Map<string, string>()
     for (let i = 0; i < messageHistory.length; i++) {
       const message = messageHistory[i]
@@ -336,7 +346,7 @@
   }
 
   async function setChatMap() {
-    const userId = userStore.user_info.id
+    const userId = userStore.id
     const chatSessionsFromDB = await db.chatSession.where({ userId: userId }).toArray()
     // 按照上次聊天时间升序排序
     chatSessionsFromDB.sort((a, b) => {
@@ -354,7 +364,7 @@
    */
   async function storeMessages(messageHistory: Array<any>) {
     if (messageHistory.length === 0) return
-    const userId = userStore.user_info.id
+    const userId = userStore.id
     for (let message of messageHistory) {
       if (message.contentType === website.contentType.ERROR || message.contentType === website.contentType.ACK) {
         continue
@@ -388,7 +398,7 @@
     if (messageHistory.length === 0) return
     const lastMessage = messageHistory[messageHistory.length - 1]
     db.chatConfig.put({
-      id: userStore.user_info.id,
+      id: userStore.id,
       serverStubId: lastMessage.id,
     })
   }
@@ -434,8 +444,8 @@
   }
 
   async function handleSelectFriend(chatSession: ChatSession, prepend: boolean) {
-    console.log(chatSession)
-    const userId = userStore.user_info.id
+    // console.log(chatSession)
+    const userId = userStore.id
     currentUser.value = chatSession
     try {
       // console.log(chatSession, prepend)
@@ -522,6 +532,8 @@
     dataLoading.value = true
     // 检查token是否过期
     await checkTokenExpire()
+    // 查询用户信息
+    await getUserInfo()
     // 初始化Websocket
     await initWebsocket()
     // 同步最新的好友
@@ -550,3 +562,4 @@
     }
   })
 </script>
+@/store/auth

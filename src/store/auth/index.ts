@@ -1,28 +1,29 @@
 import { defineStore } from 'pinia'
-import { getToken, removeToken, setToken } from './helper'
+import type { AuthState } from './helper'
+import { defaultSetting, getLocalState, setLocalState, removeLocalState } from './helper'
 import store from '@/store'
-// import { fetchSession } from '@/api'
-
-export interface AuthState {
-  accessToken: string | undefined
-}
 
 export const useAuthStore = defineStore('auth-store', {
-  state: (): AuthState => ({
-    accessToken: getToken(),
-  }),
-
+  state: (): AuthState => getLocalState(),
   getters: {},
-
   actions: {
-    setAccessToken(token: string) {
-      this.accessToken = token
-      setToken(token)
+    updateAuthInfo(authState: Partial<AuthState>) {
+      this.$state = { ...this.$state, ...authState }
+      this.recordState()
     },
 
-    removeAccessToken() {
-      this.accessToken = undefined
-      removeToken()
+    resetAuthInfo() {
+      this.$state = defaultSetting()
+      this.recordState()
+    },
+
+    removeAuthInfo() {
+      this.$state = defaultSetting()
+      removeLocalState()
+    },
+
+    recordState() {
+      setLocalState(this.$state)
     },
   },
 })

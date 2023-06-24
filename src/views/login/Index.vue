@@ -151,13 +151,12 @@
   import { onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { useAuthStore } from '@/store/auth'
-  import { useUserStore } from '@/store/user'
   import { encryption } from '@/utils/crypto'
   import { loginByPassword, registerUser } from '@/api/auth/account'
 
   const router = useRouter()
   const authStore = useAuthStore()
-  const userStore = useUserStore()
+  // const userStore = useUserStore()
   const tab = ref(null)
   const passwdLoginFormRef = ref(null)
   const smsLoginFormRef = ref(null)
@@ -244,28 +243,23 @@
       param: ['password'],
     })
     const params: string[] = Object.values(data)
-    loginByPassword(...params)
-      .then((res: any) => {
-        // console.log(res)
-        if (res.code) {
-          errorMsg.value = res.msg
-          loginSnackbar.value = true
-          refreshCode()
-          loginBtnLoading.value = false
-        } else {
-          loginBtnLoading.value = false
-          authStore.setAccessToken(res.access_token)
-          userStore.updateUserInfo(res)
-          router.push('/')
-        }
-      })
-      .catch((err) => {
-        console.error(err)
+    try {
+      const res = await loginByPassword(...params) as any
+      // console.log(res)
+      loginBtnLoading.value = false
+      authStore.updateAuthInfo(res)
+      router.push('/')
+    } catch (err: any) {
+      // console.error(err)
+      if (err.response.data.msg) {
         errorMsg.value = err.response.data.msg
-        loginSnackbar.value = true
-        loginBtnLoading.value = false
-        refreshCode()
-      })
+      } else {
+        errorMsg.value = err.response.data.error
+      }
+      loginSnackbar.value = true
+      loginBtnLoading.value = false
+      refreshCode()
+    }
   }
 
   /** 密码登录表单重置 */

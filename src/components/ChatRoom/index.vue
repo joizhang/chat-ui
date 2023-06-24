@@ -148,7 +148,7 @@
     const now = DateTime.now()
     const messageToSend: ChatMessage = {
       id: '',
-      senderId: userStore.user_info.id,
+      senderId: userStore.id,
       receiverId: props.currentUser.friendId,
       seqNum: String(Date.now()),
       content: message,
@@ -181,3 +181,4 @@
     if (inputRef.value) inputRef.value?.focus()
   })
 </script>
+@/store/auth

@@ -7,7 +7,7 @@ const whiteList = ['Login', '400', '500', '404']
 
 export function setupPageGuard(router: Router) {
   router.beforeEach(async (to, from, next) => {
-    if (authStore.accessToken) {
+    if (authStore.access_token) {
       if (to.path === '/login') {
         next({ path: '/' })
       } else {
