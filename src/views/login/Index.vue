@@ -156,7 +156,6 @@
 
   const router = useRouter()
   const authStore = useAuthStore()
-  // const userStore = useUserStore()
   const tab = ref(null)
   const passwdLoginFormRef = ref(null)
   const smsLoginFormRef = ref(null)

@@ -4,12 +4,31 @@
       <v-container class="pa-2">
         <v-row>
           <v-col cols="auto" class="me-auto">
-            <v-avatar color="white">
+            <v-avatar color="white" @click.stop="emitChangeModelValue(website.navType.CHAT_NAV_PROFILE)">
               <v-icon icon="mdi-account-circle" :size="40" color="#dfe5e7"></v-icon>
             </v-avatar>
             <!-- <v-icon icon="mdi-account-circle" :size="46" color="#dfe5e7"></v-icon> -->
           </v-col>
-          <v-col cols="auto" class="text-center">
+          <!-- New Community -->
+          <v-col cols="auto" class="text-center pl-1 pr-1">
+            <v-btn
+              icon="mdi-account-group"
+              color="#54656f"
+              variant="text"
+              @click.stop="emitChangeModelValue(website.navType.CHAT_NAV_NEW_COMMUNITY)"
+            ></v-btn>
+          </v-col>
+          <!-- Friend status -->
+          <v-col cols="auto" class="text-center pl-1 pr-1">
+            <v-btn
+              icon="mdi-checkbox-blank-circle-outline"
+              color="#54656f"
+              variant="text"
+              @click.stop="emitChangeModelValue(website.navType.CHAT_NAV_NEW_CHAT)"
+            ></v-btn>
+          </v-col>
+          <!-- New chat -->
+          <v-col cols="auto" class="text-center pl-1 pr-1">
             <v-btn
               icon="mdi-message-text"
               color="#54656f"
@@ -17,7 +36,7 @@
               @click.stop="emitChangeModelValue(website.navType.CHAT_NAV_NEW_CHAT)"
             ></v-btn>
           </v-col>
-          <v-col cols="auto" class="text-center" color="#54656f">
+          <v-col cols="auto" class="text-center pl-1" color="#54656f">
             <v-menu close-on-content-click>
               <template v-slot:activator="{ props }">
                 <v-btn icon="mdi-dots-vertical" v-bind="props" variant="text"></v-btn>
@@ -143,8 +162,8 @@
   import { ChatSession, FriendRequest } from '#/db'
 
   const props = defineProps({
-    chatMap: Map<String, ChatSession>,
     navModelValue: Number,
+    chatMap: Map<String, ChatSession>,
   })
 
   const emit = defineEmits(['popupMessage', 'addFriend', 'selectFriend', 'changeModelValue'])
@@ -179,13 +198,13 @@
   function handleLogOut() {
     logout()
       .then(() => {
-        authStore.removeAccessToken()
+        authStore.removeAuthInfo()
         userStore.removeUserInfo()
         logOutDialog.value = false
         router.push('/login')
       })
       .catch(() => {
-        authStore.removeAccessToken()
+        authStore.removeAuthInfo()
         userStore.removeUserInfo()
         logOutDialog.value = false
         router.push('/login')
@@ -223,7 +242,7 @@
       username: searchText.value,
     }
     searchCustomer(params)
-      .then((res: any) => {
+      .then((res) => {
         if (res.data.records.length === 0) {
           searchPromptText.value = 'No chats, contacts or messages found'
         } else {
@@ -231,7 +250,7 @@
         }
         searchLoading.value = false
       })
-      .catch((err) => {
+      .catch(() => {
         searchedFriends.value = []
         searchPromptText.value = 'No chats, contacts or messages found'
         searchLoading.value = false
@@ -240,7 +259,7 @@
 
   function onSelectSearchedFriend(friend: any) {
     clearChatListActive()
-    const userId = userStore.user_info.id
+    const userId = userStore.id
     if (friend.id === userId) {
       // 如果选中的是自己
       // console.log(friend)
@@ -282,7 +301,7 @@
         } else {
           // 不是朋友弹出添加朋友的提示
           friendRequestData.value = {
-            userId: userStore.user_info.id,
+            userId: userStore.id,
             friendId: friend.id,
             remark: '',
             requestStatus: website.requestStatus.PENDING,
@@ -320,3 +339,4 @@
     padding: 10px 15px;
   }
 </style>
+@/store/auth
