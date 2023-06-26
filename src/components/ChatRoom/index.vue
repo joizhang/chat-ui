@@ -84,7 +84,13 @@
           Content
         </v-container>
         <v-container v-else style="position: absolute">
-          <chat-room-message v-for="(item, index) of chatMessages" :key="index" :message="item" @popup-message="handlePopupMessage" />
+          <chat-room-message
+            v-for="(item, index) of chatMessages"
+            :key="index"
+            :message="item"
+            @popup-message="handlePopupMessage"
+            @add-friend="handleAddFriend"
+          />
         </v-container>
       </div>
     </v-main>
@@ -101,7 +107,7 @@
   import { useScroll } from './hooks/useScroll'
   import { useUserStore } from '@/store/user'
   import ChatRoomMessage from '@/components/ChatRoomMessage/index.vue'
-  import { ChatMessage } from '#/db'
+  import { ChatMessage, FriendRequest } from '#/db'
 
   const props = defineProps({
     connected: Boolean,
@@ -109,7 +115,7 @@
     chatMessages: Array<ChatMessage>,
   })
 
-  const emit = defineEmits(['popupMessage', 'sendMessage', 'closeChat'])
+  const emit = defineEmits(['popupMessage', 'addFriend', 'sendMessage', 'closeChat'])
 
   const active = computed(() => !!props.currentUser)
   // const route = useRoute()
@@ -175,10 +181,13 @@
     emit('popupMessage', message)
   }
 
+  function handleAddFriend(friendRequestData: FriendRequest) {
+    emit('addFriend', friendRequestData)
+  }
+
   onMounted(() => {
     // console.log(Object.keys(props.currentUser).length === 0)
     // scrollToBottom()
     if (inputRef.value) inputRef.value?.focus()
   })
 </script>
-@/store/auth
