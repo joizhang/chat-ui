@@ -1,6 +1,9 @@
 <template>
   <v-row>
-    <v-col class="d-flex" :class="message.inversion ? 'flex-row-reverse' : 'flex-row'">
+    <v-col v-if="message.contentType === website.contentType.TOOLTIP" class="d-flex justify-center">
+      <v-chip>{{ message.content }}</v-chip>
+    </v-col>
+    <v-col v-else class="d-flex" :class="message.inversion ? 'flex-row-reverse' : 'flex-row'">
       <v-sheet>
         <v-icon icon="mdi-account-circle" :size="46" color="#dfe5e7"></v-icon>
       </v-sheet>
@@ -26,33 +29,25 @@
 </template>
 
 <script lang="ts" setup>
-  // import { useUserStore } from '@/store/user'
-  import { addFriendRequest } from '@/api/chat/friend'
-  // import type { ChatMessage } from '#/db'
+  import website from '@/config/website'
+  import type { FriendRequest } from '#/db'
 
   const props = defineProps({
     message: { type: Object, required: true },
   })
 
-  const emit = defineEmits(['popupMessage'])
-
-  // const userStore = useUserStore()
+  const emit = defineEmits(['popupMessage', 'addFriend'])
 
   function handleFriendRequest() {
     // 现在是消息的接受者回应请求
-    const friendRequestData = {
+    const friendRequestData: FriendRequest = {
       userId: props.message!.receiverId,
       friendId: props.message!.senderId,
       remark: '',
-      requestStatus: 2,
+      requestStatus: website.requestStatus.ACCEPTED,
       seqNum: String(Date.now()),
     }
-    addFriendRequest(friendRequestData).then((res) => {
-      // console.log(res)
-      if (res.code === 1) {
-        emit('popupMessage', res.msg)
-      }
-    })
+    emit('addFriend', friendRequestData)
   }
 </script>
 
