@@ -12,7 +12,7 @@ export interface HttpOption {
 
 export interface Result {
   code: number
-  data: object
+  data: any
   msg: string | null
   success: boolean
 }

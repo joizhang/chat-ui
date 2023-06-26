@@ -3,7 +3,7 @@ export default {
   description: 'spring cloud chat',
   db: {
     name: 'model-storage',
-    version: 9,
+    version: 11,
   },
   wsBaseUrl: `${import.meta.env.VITE_APP_WS_BASE_URL}chat/ws/info`,
   contentType: {
@@ -22,9 +22,11 @@ export default {
   },
   navType: {
     CHAT_NAV: 0,
-    CHAT_NAV_NEW_CHAT: 1,
-    CHAT_NAV_NEW_COMMUNITY: 11,
-    CHAT_NAV_SETTINGS: 2,
-    CHAT_NAV_PROFILE: 21,
+    CHAT_NAV_PROFILE: 1,
+    CHAT_NAV_STATUS: 2,
+    CHAT_NAV_COMMUNITIES: 3,
+    CHAT_NAV_NEW_COMMUNITY: 30,
+    CHAT_NAV_NEW_CHAT: 4,
+    CHAT_NAV_SETTINGS: 5,
   }
 }

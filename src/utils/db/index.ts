@@ -1,6 +1,6 @@
 import website from '@/config/website'
 import Dexie, { Table } from 'dexie'
-import type { ChatSession, ChatMessage, ChatConfig, ChatFriend } from '#/db'
+import type { ChatSession, ChatMessage, ChatConfig, ChatFriend, PendingChatFriend } from '#/db'
 
 export class MySubClassedDexie extends Dexie {
   // 'ChatList' is added by dexie when declaring the stores()
@@ -9,6 +9,7 @@ export class MySubClassedDexie extends Dexie {
   chatMessage!: Table<ChatMessage>
   chatConfig!: Table<ChatConfig>
   chatFriend!: Table<ChatFriend>
+  pendingChatFriend!: Table<PendingChatFriend>
 
   constructor() {
     super(website.db.name)
@@ -17,6 +18,7 @@ export class MySubClassedDexie extends Dexie {
       chatMessage: 'id, [senderId+receiverId]',
       chatConfig: 'id',
       chatFriend: 'id, userId',
+      pendingChatFriend: 'id, userId, friendId',
     })
   }
 }

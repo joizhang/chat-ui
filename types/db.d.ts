@@ -39,6 +39,16 @@ export interface ChatFriend {
   createTime: string
 }
 
+export interface PendingChatFriend {
+  id: string // userId + friendId
+  userId: string // senderId
+  friendId: string // receiverId
+  username: string // sender username
+  phone: string // sender phone
+  avatar: string // sender avatar
+  createTime: string // Request create time
+}
+
 export interface FriendRequest {
   userId: string
   friendId: string

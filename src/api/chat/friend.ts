@@ -29,10 +29,15 @@ export function deleteFriend(friendId: string, signal?: GenericAbortSignal) {
   })
 }
 
-export function getCustomersByFriends(createTime:any, signal?: GenericAbortSignal) {
+export function getCustomersByFriends(
+  userId: string,
+  createTime: any,
+  requestStatus: string,
+  signal?: GenericAbortSignal,
+) {
   return get({
     url: '/chat/svc/friend/customers',
-    params: { createTime },
+    params: { userId, createTime, requestStatus },
     signal: signal,
   })
 }

@@ -57,9 +57,9 @@
                                   </v-col>
                                 </v-row>
                               </v-container>
-                              <v-btn type="submit" class="me-4" :loading="loginBtnLoading" @click="handlePasswordLogin"
-                                >Submit</v-btn
-                              >
+                              <v-btn type="submit" class="me-4" :loading="loginBtnLoading" @click="handlePasswordLogin">
+                                Submit
+                              </v-btn>
                               <v-btn @click="handlePasswdLoginFormReset">clear</v-btn>
                             </v-form>
                           </v-sheet>
@@ -243,7 +243,7 @@
     })
     const params: string[] = Object.values(data)
     try {
-      const res = await loginByPassword(...params) as any
+      const res = (await loginByPassword(...params)) as any
       // console.log(res)
       loginBtnLoading.value = false
       authStore.updateAuthInfo(res)
