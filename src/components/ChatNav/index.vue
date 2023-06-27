@@ -1,22 +1,29 @@
 <template>
   <v-layout full-height>
-    <!-- 个人资料 -->
+    <!-- 个人资料Drawer -->
     <chat-nav-profile
       :nav-model-value="navModelValue"
       @change-model-value="handleChangeModelValue"
       @popup-message="handlePopupMessage"
     ></chat-nav-profile>
 
+    <!-- 群聊列表Drawer -->
+    <chat-nav-communities
+      :nav-model-value="navModelValue"
+      @change-model-value="handleChangeModelValue"
+    ></chat-nav-communities>
+
     <!-- 新建群聊Drawer -->
     <chat-nav-new-community
       :nav-model-value="navModelValue"
       @change-model-value="handleChangeModelValue"
+      @popup-message="handlePopupMessage"
     ></chat-nav-new-community>
 
-    <!-- 新建会话和群聊Drawer -->
+    <!-- 新建会话和联系人列表Drawer -->
     <chat-nav-new-chat
       :nav-model-value="navModelValue"
-      :chat-friend="chatFriends"
+      :chat-friends="chatFriends"
       @change-model-value="handleChangeModelValue"
     ></chat-nav-new-chat>
 
@@ -42,6 +49,7 @@
   import { ref } from 'vue'
   import { ChatFriend, ChatSession, FriendRequest } from '#/db'
   import ChatNavProfile from '@/components/ChatNavProfile/index.vue'
+  import ChatNavCommunities from '@/components/ChatNavCommunities/index.vue'
   import ChatNavNewCommunity from '@/components/ChatNavNewCommunity/index.vue'
   import ChatNavNewChat from '@/components/ChatNavNewChat/index.vue'
   import ChatNavSettings from '@/components/ChatNavSettings/index.vue'

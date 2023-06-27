@@ -4,7 +4,11 @@
       <v-container class="pa-2">
         <v-row>
           <v-col cols="auto" class="me-auto">
-            <v-avatar color="white" @click.stop="emitChangeModelValue(website.navType.CHAT_NAV_PROFILE)">
+            <v-avatar
+              color="white"
+              @click.stop="emitChangeModelValue(website.navType.CHAT_NAV_PROFILE)"
+              style="cursor: pointer"
+            >
               <v-icon icon="mdi-account-circle" :size="40" color="#dfe5e7"></v-icon>
             </v-avatar>
             <!-- <v-icon icon="mdi-account-circle" :size="46" color="#dfe5e7"></v-icon> -->
@@ -15,7 +19,7 @@
               icon="mdi-account-group"
               color="#54656f"
               variant="text"
-              @click.stop="emitChangeModelValue(website.navType.CHAT_NAV_NEW_COMMUNITY)"
+              @click.stop="emitChangeModelValue(website.navType.CHAT_NAV_COMMUNITIES)"
             ></v-btn>
           </v-col>
           <!-- Friend status -->
@@ -24,7 +28,7 @@
               icon="mdi-checkbox-blank-circle-outline"
               color="#54656f"
               variant="text"
-              @click.stop="emitChangeModelValue(website.navType.CHAT_NAV_NEW_CHAT)"
+              @click.stop="emit('popupMessage', 'Coming Soon')"
             ></v-btn>
           </v-col>
           <!-- New chat -->
@@ -43,7 +47,10 @@
               </template>
               <v-list width="200">
                 <v-list-item link>
-                  <v-list-item-title>New group</v-list-item-title>
+                  <v-list-item-title>New community</v-list-item-title>
+                </v-list-item>
+                <v-list-item link>
+                  <v-list-item-title>Started messages</v-list-item-title>
                 </v-list-item>
                 <v-list-item link>
                   <v-list-item-title>Select chats</v-list-item-title>
@@ -149,13 +156,12 @@
 </template>
 
 <script lang="ts" setup>
+  import website from '@/config/website'
   import { computed, ref } from 'vue'
   import { useRouter } from 'vue-router'
-
   import { useAuthStore } from '@/store/auth'
   import { useUserStore } from '@/store/user'
   import { DateTime } from 'luxon'
-  import website from '@/config/website'
   import { logout } from '@/api/auth/account'
   import { searchCustomer } from '@/api/chat/customer'
   import { checkFriend } from '@/api/chat/friend'
@@ -339,4 +345,3 @@
     padding: 10px 15px;
   }
 </style>
-@/store/auth

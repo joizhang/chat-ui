@@ -33,13 +33,29 @@
     </v-text-field>
 
     <v-list>
-      <v-list-item link active-color="primary" class="pa-3" @click="onNewGroup">
+      <v-list-item link active-color="primary" class="pa-3" @click="onNewCommunity">
         <template v-slot:prepend>
           <v-avatar color="#d4a27f">
             <v-icon icon="mdi-account-group" :size="30" color="white"></v-icon>
           </v-avatar>
         </template>
-        <v-list-item-title>New group</v-list-item-title>
+        <v-list-item-title>New community</v-list-item-title>
+      </v-list-item>
+      <v-list-item
+        v-for="(item, index) of chatFriends"
+        :key="index"
+        link
+        active-color="primary"
+        class="pa-3"
+        @click="onSelectFriend(item)"
+      >
+        <template v-slot:prepend>
+          <v-avatar color="#d4a27f">
+            <v-icon icon="mdi-account" :size="30" color="white"></v-icon>
+          </v-avatar>
+        </template>
+        <v-list-item-title>{{ item.username }}</v-list-item-title>
+        <v-list-item-subtitle>{{ item.phone }}</v-list-item-subtitle>
       </v-list-item>
     </v-list>
   </v-navigation-drawer>
@@ -48,9 +64,11 @@
 <script lang="ts" setup>
   import { ref } from 'vue'
   import website from '@/config/website'
+  import { ChatFriend } from '#/db'
 
-  defineProps({
+  const props = defineProps({
     navModelValue: Number,
+    chatFriends: Array<ChatFriend>,
   })
 
   const emit = defineEmits(['changeModelValue'])
@@ -68,7 +86,12 @@
 
   function handleSearchContactsEnter() {}
 
-  function onNewGroup() {
-    console.log(123)
+  function onNewCommunity() {
+    // console.log(123)
+    console.log(props.chatFriends)
+  }
+
+  function onSelectFriend(item: ChatFriend) {
+    console.log(item)
   }
 </script>
