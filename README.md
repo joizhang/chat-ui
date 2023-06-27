@@ -2,6 +2,8 @@
 
 UI for [spring-cloud-chat](https://github.com/joizhang/spring-cloud-chat)
 
+![cover](./docs/chat.png)
+
 ## Project setup
 
 ```

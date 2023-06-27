@@ -32,16 +32,6 @@
       </template>
     </v-text-field>
 
-    <v-list>
-      <v-list-item link active-color="primary" class="pa-3" @click="onNewGroup">
-        <template v-slot:prepend>
-          <v-avatar color="grey-lighten-1">
-            <v-icon icon="mdi-account-group" :size="60" color="#dfe5e7"></v-icon>
-          </v-avatar>
-        </template>
-        <v-list-item-title>New group</v-list-item-title>
-      </v-list-item>
-    </v-list>
   </v-navigation-drawer>
 </template>
 
