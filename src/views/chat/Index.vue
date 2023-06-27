@@ -169,14 +169,9 @@
           // debugger
           // 处理好友请求
           if (message.content === website.requestStatus.PENDING) {
-            // 展示好友请求
-            // message.content = 'Pending friend request.'
             // 同步待处理的好友
             await syncPendingFriends()
           } else if (message.content === website.requestStatus.ACCEPTED) {
-            // 同意之后，好友请求转为普通文本消息
-            // message.contentType = 2
-            // message.content = "We are friends now, let's start chatting."
             // 同步最新的好友
             await syncFriends()
             // 设置联系人列表
@@ -469,7 +464,7 @@
           message.contentType = website.contentType.TOOLTIP
         }
       }
-      db.chatMessage.add({
+      db.chatMessage.put({
         ...message,
         inversion: message.senderId === userId,
         error: '',
@@ -531,7 +526,7 @@
     }
 
     inflightMessages.value.set(messageKey, message)
-    console.log(inflightMessages.value)
+    // console.log(inflightMessages.value)
     try {
       const res = await addFriendRequest(friendRequestData)
       if (res.code === 1) {
@@ -647,6 +642,7 @@
 
   onMounted(async () => {
     dataLoading.value = true
+    
     // 检查token是否过期
     await checkTokenExpire()
     // 查询登陆用户信息
