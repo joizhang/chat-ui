@@ -97,19 +97,6 @@ export function registerUser(registeredUser: any) {
 }
 
 /**
- * Retrieves user information from the server.
- *
- * @param {GenericAbortSignal} [signal] - An optional signal object that allows the user to abort the request.
- * @return {Promise<any>} - A promise that resolves with the user information.
- */
-export function retrieveCustomerInfo(signal?: GenericAbortSignal) {
-  return get({
-    url: '/chat/svc/customer/info',
-    signal: signal,
-  })
-}
-
-/**
  * 注销
  */
 export function logout() {
