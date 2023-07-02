@@ -11,7 +11,7 @@
       </v-container>
     </v-sheet>
 
-    <v-list>
+    <v-list bg-color="white">
       <v-list-item link active-color="primary" class="pa-3">
         <template v-slot:prepend>
           <v-avatar color="#d4a27f">

@@ -2,19 +2,29 @@
   <v-layout full-height>
     <!-- 个人资料Drawer -->
     <chat-nav-profile
+      color="#f0f2f5"
       :nav-model-value="navModelValue"
       @change-model-value="handleChangeModelValue"
       @popup-message="handlePopupMessage"
     ></chat-nav-profile>
 
+    <!-- 群聊详细信息 -->
+    <chat-nav-community
+      color="#f0f2f5"
+      :nav-model-value="navModelValue"
+      @change-model-value="handleChangeModelValue"
+    ></chat-nav-community>
+
     <!-- 群聊列表Drawer -->
     <chat-nav-communities
+      color="#f0f2f5"
       :nav-model-value="navModelValue"
       @change-model-value="handleChangeModelValue"
     ></chat-nav-communities>
 
     <!-- 新建群聊Drawer -->
     <chat-nav-new-community
+      color="#f0f2f5"
       :nav-model-value="navModelValue"
       @change-model-value="handleChangeModelValue"
       @popup-message="handlePopupMessage"
@@ -22,6 +32,7 @@
 
     <!-- 新建会话和联系人列表Drawer -->
     <chat-nav-new-chat
+      color="#f0f2f5"
       :nav-model-value="navModelValue"
       :chat-friends="chatFriends"
       @change-model-value="handleChangeModelValue"
@@ -29,6 +40,7 @@
 
     <!-- 设置Drawer -->
     <chat-nav-settings
+      color="#f0f2f5"
       :nav-model-value="navModelValue"
       @change-model-value="handleChangeModelValue"
     ></chat-nav-settings>
@@ -49,6 +61,7 @@
   import { ref } from 'vue'
   import { ChatFriend, ChatSession, FriendRequest } from '#/db'
   import ChatNavProfile from '@/components/ChatNavProfile/index.vue'
+  import ChatNavCommunity from '@/components/ChatNavCommunity/index.vue'
   import ChatNavCommunities from '@/components/ChatNavCommunities/index.vue'
   import ChatNavNewCommunity from '@/components/ChatNavNewCommunity/index.vue'
   import ChatNavNewChat from '@/components/ChatNavNewChat/index.vue'

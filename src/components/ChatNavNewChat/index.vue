@@ -11,28 +11,30 @@
       </v-container>
     </v-sheet>
 
-    <v-text-field
-      v-model="searchContactsText"
-      density="compact"
-      variant="outlined"
-      label="Search contacts"
-      single-line
-      hide-details
-      clearable
-      class="pd-10-15"
-      @click:append-inner="onSearchContacts"
-      @click:clear="onClearSearchContactsMessage"
-      @keypress="handleSearchContactsEnter"
-    >
-      <template v-slot:append-inner>
-        <v-fade-transition leave-absolute>
-          <v-progress-circular v-if="searchLoading" indeterminate :size="22"></v-progress-circular>
-          <v-icon v-else icon="mdi-magnify"></v-icon>
-        </v-fade-transition>
-      </template>
-    </v-text-field>
+    <v-sheet>
+      <v-text-field
+        v-model="searchContactsText"
+        density="compact"
+        variant="outlined"
+        label="Search contacts"
+        single-line
+        hide-details
+        clearable
+        class="pd-10-15"
+        @click:append-inner="onSearchContacts"
+        @click:clear="onClearSearchContactsMessage"
+        @keypress="handleSearchContactsEnter"
+      >
+        <template v-slot:append-inner>
+          <v-fade-transition leave-absolute>
+            <v-progress-circular v-if="searchLoading" indeterminate :size="22"></v-progress-circular>
+            <v-icon v-else icon="mdi-magnify"></v-icon>
+          </v-fade-transition>
+        </template>
+      </v-text-field>
+    </v-sheet>
 
-    <v-list>
+    <v-list bg-color="white">
       <v-list-item link active-color="primary" class="pa-3" @click="onNewCommunity">
         <template v-slot:prepend>
           <v-avatar color="#d4a27f">
