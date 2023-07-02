@@ -104,6 +104,7 @@
   import type { Ref } from 'vue'
   import { computed, onMounted, ref, watch } from 'vue'
   import { DateTime } from 'luxon'
+  import website from '@/config/website'
   import { useScroll } from './hooks/useScroll'
   import { useUserStore } from '@/store/user'
   import ChatRoomMessage from '@/components/ChatRoomMessage/index.vue'
@@ -158,7 +159,8 @@
       receiverId: props.currentUser.friendId,
       seqNum: String(Date.now()),
       content: message,
-      contentType: 2,
+      contentType: website.contentType.TEXT,
+      contentSubtype: website.contentSubtype.DEFAULT,
       createTime: now.toFormat('yyyy-MM-dd HH:mm:ss'),
       inversion: true,
       error: '',

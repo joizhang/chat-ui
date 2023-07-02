@@ -3,6 +3,14 @@
     <v-col v-if="message.contentType === website.contentType.TOOLTIP" class="d-flex justify-center">
       <v-chip>{{ message.content }}</v-chip>
     </v-col>
+
+    <v-col 
+      v-else-if="message.contentType == website.contentType.FRIEND_REQ && message.contentSubtype === website.requestStatus.ACCEPTED" 
+      class="d-flex justify-center"
+    >
+      <v-chip>{{ message.content }}</v-chip>
+    </v-col>
+
     <v-col v-else class="d-flex" :class="message.inversion ? 'flex-row-reverse' : 'flex-row'">
       <v-sheet>
         <v-icon icon="mdi-account-circle" :size="46" color="#dfe5e7"></v-icon>

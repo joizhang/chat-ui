@@ -52,16 +52,18 @@
   import { onMounted, onUnmounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { DateTime } from 'luxon'
-  import { checkToken, refreshToken, retrieveCustomerInfo } from '@/api/auth/account'
+  import { checkToken, refreshToken } from '@/api/auth/account'
+  import { retrieveCustomerInfo } from '@/api/chat/customer'
   import { addFriendRequest, getCustomersByFriends } from '@/api/chat/friend'
-  import { getMessageHistory } from '@/api/message/one'
+  import { getMessageHistory } from '@/api/chat/message'
+  import { getCommunities } from '@/api/chat/community'
   import { useAuthStore } from '@/store/auth'
   import { useUserStore } from '@/store/user'
   import { db } from '@/utils/db'
   import website from '@/config/website'
   import ChatNav from '@/components/ChatNav/index.vue'
   import ChatRoom from '@/components/ChatRoom/index.vue'
-  import { ChatMessage, ChatSession, ChatFriend, FriendRequest } from '#/db'
+  import { ChatMessage, ChatSession, ChatFriend, PendingChatFriend, ChatCommunity, FriendRequest } from '#/db'
 
   const halfAnHour = 30 * 60 * 1000
 
@@ -71,10 +73,12 @@
 
   const dataLoading = ref(true)
   const connected = ref(true)
-  // 使用Map实现LRU缓存
-  const chatMap = ref(new Map<string, ChatSession>())
   // 联系人列表
   const chatFriends = ref<Array<ChatFriend>>([])
+  // 群聊列表
+  const chatCommunities = ref<Array<ChatCommunity>>([])
+  // 使用Map实现LRU缓存
+  const chatMap = ref(new Map<string, ChatSession>())
   // 当前聊天对象
   const currentUser = ref<ChatSession>()
   // 聊天记录
@@ -120,6 +124,7 @@
    * @return {Promise<void>} A promise that resolves when the user info is stored.
    */
   async function getAndStoreUserInfo() {
+    if (!authStore.access_token) return
     try {
       const res = await retrieveCustomerInfo()
       // console.log(res)
@@ -128,18 +133,6 @@
       errorMsg.value = err.message
       chatSnackbar.value = true
     }
-  }
-
-  /**
-   * Sets the chat friends for the user by querying the database.
-   *
-   * @return {Promise} A promise that resolves with the chat friends array.
-   */
-  async function setFriends() {
-    const userId = userStore.id
-    const chatFriendsFromDB = await db.chatFriend.where({ userId }).toArray()
-    // console.log(chatFriendsFromDB)
-    chatFriends.value = chatFriendsFromDB
   }
 
   /**
@@ -168,10 +161,15 @@
           // console.log(message)
           // debugger
           // 处理好友请求
-          if (message.content === website.requestStatus.PENDING) {
+          if (message.contentSubtype === website.requestStatus.PENDING) {
+            // 展示好友请求
+            // message.content = 'Pending friend request.'
             // 同步待处理的好友
             await syncPendingFriends()
-          } else if (message.content === website.requestStatus.ACCEPTED) {
+          } else if (message.contentSubtype === website.requestStatus.ACCEPTED) {
+            // 同意之后，好友请求转为普通文本消息
+            // message.content = "We are friends now, let's start chatting."
+            // message.contentType = website.contentType.TOOLTIP
             // 同步最新的好友
             await syncFriends()
             // 设置联系人列表
@@ -275,7 +273,7 @@
       }
       const pendingChatFriendsToStore = []
       for (let pendingFriend of pendingFriends) {
-        const chatFriend: ChatFriend = {
+        const pendingChatFriend: PendingChatFriend = {
           id: `${pendingFriend.id}_${userId}`,
           userId: pendingFriend.id,
           friendId: userId,
@@ -283,8 +281,9 @@
           phone: pendingFriend.phone,
           avatar: pendingFriend.avatar,
           createTime: pendingFriend.createTime,
+          updateTime: pendingFriend.updateTime,
         }
-        pendingChatFriendsToStore.push(chatFriend)
+        pendingChatFriendsToStore.push(pendingChatFriend)
       }
       await db.pendingChatFriend.bulkAdd(pendingChatFriendsToStore)
     } catch (error: any) {
@@ -321,6 +320,7 @@
           phone: friend.phone,
           avatar: friend.avatar,
           createTime: friend.createTime,
+          updateTime: friend.updateTime,
         }
         chatFriendsToStore.push(chatFriend)
       }
@@ -330,6 +330,73 @@
       chatSnackbar.value = true
       errorMsg.value = error.message
     }
+  }
+
+  /**
+   * Sets the chat friends for the user by querying the database.
+   *
+   * @return {Promise} A promise that resolves with the chat friends array.
+   */
+  async function setFriends() {
+    const userId = userStore.id
+    const chatFriendsFromDB = await db.chatFriend.where({ userId }).toArray()
+    // console.log(chatFriendsFromDB)
+    chatFriends.value = chatFriendsFromDB
+  }
+
+  /**
+   * Synchronizes the communities data with the server.
+   *
+   * @return {Promise<void>} Resolves when the synchronization is complete.
+   */
+  async function syncCommunities() {
+    if (!socket) return
+    try {
+      const userId = userStore.id
+      const chatCommunitiesFromDB = await db.chatCommunity.where({ memberId: userId }).toArray()
+      chatCommunitiesFromDB.sort((a, b) => {
+        return new Date(a.createTime).getTime() - new Date(b.createTime).getTime()
+      })
+      // console.log(chatFriendsFromDB)
+      let createTime = null
+      if (chatCommunitiesFromDB.length > 0) {
+        createTime = chatCommunitiesFromDB[chatCommunitiesFromDB.length - 1].createTime
+      }
+      const res = await getCommunities(userId, createTime)
+      const communities = (res.data as any[]) ?? []
+      if (communities.length === 0) {
+        return
+      }
+      const chatCommunitiesToStore = []
+      for (let community of communities) {
+        const chatCommunity: ChatCommunity = {
+          id: community.id,
+          communityName: community.communityName,
+          avatar: community.avatar,
+          description: community.description,
+          adminId: community.adminId,
+          memberId: userId,
+          createTime: community.createTime,
+          updateTime: community.updateTime,
+        }
+        chatCommunitiesToStore.push(chatCommunity)
+      }
+      await db.chatCommunity.bulkAdd(chatCommunitiesToStore)
+    } catch (error: any) {
+      chatSnackbar.value = true
+      errorMsg.value = error.message
+    }
+  }
+
+  /**
+   * Sets the chat communities for the user.
+   *
+   * @return {Promise<void>} - A Promise that resolves once the chat communities are set.
+   */
+  async function setCommunities() {
+    const userId = userStore.id
+    const chatCommunitiesFromDB = await db.chatCommunity.where({ memberId: userId }).toArray()
+    chatCommunities.value = chatCommunitiesFromDB
   }
 
   /**
@@ -380,7 +447,7 @@
         let sender = null
         if (
           message.contentType === website.contentType.FRIEND_REQ &&
-          message.content === website.requestStatus.PENDING
+          message.contentSubtype === website.requestStatus.PENDING
         ) {
           sender = await db.pendingChatFriend.get({ id: `${senderId}_${userId}` })
         } else {
@@ -391,22 +458,18 @@
           continue
         }
         // console.log(sender.id)
-        let title = ''
         let id = ''
         let friendId = ''
+
         if (
           message.contentType === website.contentType.FRIEND_REQ &&
-          message.content === website.requestStatus.PENDING
+          message.contentSubtype === website.requestStatus.PENDING
         ) {
-          title = 'Friend Request'
+          // 待处理的好友请求的Sender来自PendingChatFriend
           id = `${sender.userId}_${userId}`
           friendId = sender.userId
         } else {
-          if (message.content === website.requestStatus.ACCEPTED) {
-            title = 'Friend Request'
-          } else {
-            title = message.content
-          }
+          // 其他消息的Sender来自ChatFriend
           id = `${sender.friendId}_${userId}`
           friendId = sender.friendId
         }
@@ -417,7 +480,7 @@
           username: sender.username,
           phone: sender.phone,
           avatar: sender.avatar,
-          title: title,
+          title: message.content,
           lastChatTime: message.createTime,
           active: false,
         }
@@ -454,15 +517,6 @@
     for (let message of messageHistory) {
       if (message.contentType === website.contentType.ERROR || message.contentType === website.contentType.ACK) {
         continue
-      } else if (message.contentType === website.contentType.FRIEND_REQ) {
-        if (message.content === website.requestStatus.PENDING) {
-          // 展示好友请求
-          message.content = 'Pending friend request.'
-        } else if (message.content === website.requestStatus.ACCEPTED) {
-          // 同意之后，好友请求转为普通文本消息
-          message.content = "We are friends now, let's start chatting."
-          message.contentType = website.contentType.TOOLTIP
-        }
       }
       db.chatMessage.put({
         ...message,
@@ -481,7 +535,7 @@
    * @param {Array<any>} messageHistory - An array of messages sent by the user
    */
   async function updateUserServerStubId(messageHistory: Array<any>) {
-    if (messageHistory.length === 0) return
+    if (messageHistory.length === 0 || !userStore.id) return
     const lastMessage = messageHistory[messageHistory.length - 1]
     db.chatConfig.put({
       id: userStore.id,
@@ -490,53 +544,44 @@
   }
 
   async function handleAddFriend(friendRequestData: FriendRequest) {
-    // debugger
-    const messageKey = `${friendRequestData.userId}_${friendRequestData.friendId}_${friendRequestData.seqNum}`
-    let message = null
-    if (friendRequestData.requestStatus === website.requestStatus.ACCEPTED) {
-      message = {
-        id: '',
-        senderId: friendRequestData.userId,
-        receiverId: friendRequestData.friendId,
-        seqNum: friendRequestData.seqNum,
-        content: "We are friends now, let's start chatting.",
-        contentType: website.contentType.TOOLTIP,
-        createTime: DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss'),
-        inversion: true,
-        error: '',
-        loading: true,
-        ack: false,
-      }
-    } else if (friendRequestData.requestStatus === website.requestStatus.PENDING) {
-      message = {
-        id: '',
-        senderId: friendRequestData.userId,
-        receiverId: friendRequestData.friendId,
-        seqNum: friendRequestData.seqNum,
-        content: friendRequestData.requestStatus,
-        contentType: website.contentType.FRIEND_REQ,
-        createTime: DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss'),
-        inversion: true,
-        error: '',
-        loading: true,
-        ack: false,
-      }
-    } else {
+    if (
+      friendRequestData.requestStatus !== website.requestStatus.ACCEPTED &&
+      friendRequestData.requestStatus !== website.requestStatus.PENDING
+    ) {
       return
     }
 
-    inflightMessages.value.set(messageKey, message)
-    // console.log(inflightMessages.value)
     try {
       const res = await addFriendRequest(friendRequestData)
       if (res.code === 1) {
         errorMsg.value = res.msg ?? ''
         chatSnackbar.value = true
       } else {
+        let content: string
+        if (friendRequestData.requestStatus === website.requestStatus.PENDING) {
+          content = 'Pending Friend Request'
+        } else {
+          content = "We are friends now, let's start chatting."
+        }
+        const message: ChatMessage = {
+          id: '',
+          senderId: friendRequestData.userId,
+          receiverId: friendRequestData.friendId,
+          seqNum: friendRequestData.seqNum,
+          content: content,
+          contentType: website.contentType.FRIEND_REQ,
+          contentSubtype: friendRequestData.requestStatus,
+          createTime: DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss'),
+          inversion: true,
+          error: '',
+          loading: true,
+          ack: false,
+        }
+        handleSendMessage(message)
+
         if (friendRequestData.requestStatus === website.requestStatus.ACCEPTED) {
           await syncFriends()
           await setFriends()
-          chatMessages.value.push(message)
         }
       }
     } catch (error: any) {
@@ -608,7 +653,7 @@
       curChatSession.lastChatTime = messageToSend.createTime
       curChatSession.title = messageToSend.content
       chatMap.value.set(chatMapKey, curChatSession)
-      // 更新DB
+      // 更新 chatSession DB
       const chatSessionFromDB = await db.chatSession.get(curChatSession.id)
       if (chatSessionFromDB) {
         chatSessionFromDB.lastChatTime = messageToSend.createTime
@@ -620,14 +665,17 @@
     const message = {
       senderId: messageToSend.senderId,
       receiverId: messageToSend.receiverId,
+      seqNum: messageToSend.seqNum,
       content: messageToSend.content,
       contentType: messageToSend.contentType,
-      seqNum: messageToSend.seqNum,
+      contentSubtype: messageToSend.contentSubtype,
     }
     const messageKey = `${messageToSend.senderId}_${messageToSend.receiverId}_${messageToSend.seqNum}`
     inflightMessages.value.set(messageKey, messageToSend)
+    if (currentUser.value && currentUser.value.friendId === message.receiverId) {
+      chatMessages.value.push(messageToSend)
+    }
     socket.send(JSON.stringify(message))
-    chatMessages.value.push(messageToSend)
   }
 
   /**
@@ -642,7 +690,7 @@
 
   onMounted(async () => {
     dataLoading.value = true
-    
+
     // 检查token是否过期
     await checkTokenExpire()
     // 查询登陆用户信息
@@ -657,6 +705,11 @@
     await syncFriends()
     // 设置联系人列表
     await setFriends()
+
+    // 同步最新的群聊
+    await syncCommunities()
+    // 设置群聊列表
+    await setCommunities()
 
     // 同步最新的消息
     const messageHistory: Array<any> = await syncMessages()

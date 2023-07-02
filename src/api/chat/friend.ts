@@ -32,7 +32,7 @@ export function deleteFriend(friendId: string, signal?: GenericAbortSignal) {
 export function getCustomersByFriends(
   userId: string,
   createTime: any,
-  requestStatus: string,
+  requestStatus: number,
   signal?: GenericAbortSignal,
 ) {
   return get({

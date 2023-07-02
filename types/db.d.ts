@@ -17,6 +17,7 @@ export interface ChatMessage {
   seqNum: string
   content: string
   contentType: number
+  contentSubtype: number
   createTime: string
   inversion: boolean
   error: string
@@ -37,6 +38,7 @@ export interface ChatFriend {
   phone: string
   avatar: string
   createTime: string
+  updateTime: string
 }
 
 export interface PendingChatFriend {
@@ -47,12 +49,24 @@ export interface PendingChatFriend {
   phone: string // sender phone
   avatar: string // sender avatar
   createTime: string // Request create time
+  updateTime: string // Request update time
+}
+
+export interface ChatCommunity {
+  id: string // communityId
+  communityName: string
+  avatar: string
+  description: string
+  adminId: string
+  memberId: string // userId
+  createTime: string
+  updateTime: string
 }
 
 export interface FriendRequest {
   userId: string
   friendId: string
   remark: string
-  requestStatus: string
+  requestStatus: number
   seqNum: string
 }
